@@ -1,0 +1,2887 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Teardown: Stoxo AI - Query-to-Decision Flow</title>
+    <meta name="description" content="A deep product teardown of Stoxo AI's query-to-decision flow for StockGro.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 72px
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1e1e2e;
+            line-height: 1.75;
+            background: #faf9f7;
+            overflow-x: hidden
+        }
+
+        /* Nav */
+        #topnav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(250, 249, 247, 0);
+            /* Default transparent */
+            backdrop-filter: blur(0px);
+            border-bottom: 1px solid transparent;
+            transition: all .4s ease-in-out;
+        }
+
+        #topnav.scrolled {
+            background: rgba(250, 249, 247, .88);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, .04);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, .06)
+        }
+
+        .nav-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .9rem 2rem
+        }
+
+        .nav-brand {
+            font-weight: 900;
+            font-size: .72rem;
+            letter-spacing: 3px;
+            color: #d4502e
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem
+        }
+
+        .nav-links a {
+            font-size: .76rem;
+            font-weight: 600;
+            color: #777;
+            text-decoration: none;
+            letter-spacing: .6px;
+            transition: color .25s;
+            position: relative
+        }
+
+        .nav-links a:hover {
+            color: #d4502e
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #d4502e;
+            transition: width .3s
+        }
+
+        .nav-links a:hover::after {
+            width: 100%
+        }
+
+        /* Containers */
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 2rem
+        }
+
+        .narrow {
+            max-width: 780px
+        }
+
+        /* Hero */
+        #hero {
+            background: linear-gradient(145deg, #e8613c 0%, #d44e2b 50%, #b8381e 100%);
+            color: #fff;
+            padding: 10rem 2rem 6rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden
+        }
+
+        #hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+        }
+
+        .hero-label {
+            font-size: .7rem;
+            letter-spacing: 4px;
+            font-weight: 800;
+            opacity: .55;
+            margin-bottom: 1.5rem
+        }
+
+        #hero h1 {
+            font-size: clamp(3.2rem, 9vw, 6rem);
+            font-weight: 900;
+            letter-spacing: -3px;
+            line-height: .95;
+            margin-bottom: .6rem
+        }
+
+        .hero-sub {
+            font-size: clamp(1.05rem, 2.5vw, 1.5rem);
+            font-weight: 400;
+            opacity: .8;
+            margin-bottom: 2.5rem
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-size: .82rem;
+            opacity: .55;
+            flex-wrap: wrap
+        }
+
+        .dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: currentColor
+        }
+
+        .hero-cta {
+            display: inline-block;
+            margin-top: 3rem;
+            padding: 1rem 2.6rem;
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+            border: 1.5px solid rgba(255, 255, 255, .25);
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: .85rem;
+            text-decoration: none;
+            transition: all .35s;
+            backdrop-filter: blur(6px);
+            letter-spacing: .5px
+        }
+
+        .hero-cta:hover {
+            background: rgba(255, 255, 255, .22);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .15)
+        }
+
+        /* Sections */
+        .section {
+            padding: 5.5rem 0
+        }
+
+        .section-warm {
+            background: #fdf2ee
+        }
+
+        .section-dark {
+            background: #161625;
+            color: #d0cdc8
+        }
+
+        .section-dark h2,
+        .section-dark h3,
+        .section-dark h4 {
+            color: #f5f3f0
+        }
+
+        .section-dark .lead {
+            color: #a09d98
+        }
+
+        .section-dark .muted {
+            color: #777
+        }
+
+        .section-num {
+            display: inline-block;
+            font-size: .65rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #d4502e;
+            margin-bottom: .6rem;
+            padding: .25rem .7rem;
+            background: rgba(212, 80, 46, .06);
+            border-radius: 4px
+        }
+
+        .section-dark .section-num {
+            color: #f0856a;
+            background: rgba(240, 133, 106, .08)
+        }
+
+        h2 {
+            font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -.8px;
+            line-height: 1.15;
+            margin-bottom: 1.2rem
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: .8rem
+        }
+
+        .lead {
+            font-size: 1.08rem;
+            color: #666;
+            max-width: 680px;
+            margin-bottom: 2.2rem
+        }
+
+        .muted {
+            font-size: .85rem;
+            color: #999;
+            line-height: 1.65
+        }
+
+        /* Blockquote */
+        blockquote {
+            border-left: 3px solid #d4502e;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            font-size: 1.12rem;
+            font-weight: 600;
+            color: #2a2a3a;
+            background: rgba(212, 80, 46, .03);
+            border-radius: 0 10px 10px 0
+        }
+
+        .big-quote {
+            font-size: 1.15rem;
+            border: none;
+            background: rgba(255, 255, 255, .05);
+            border-radius: 14px;
+            padding: 2.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, .85);
+            font-style: italic;
+            line-height: 1.7;
+            margin-bottom: 2.5rem
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1.3rem;
+            margin: 2rem 0
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.6rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 4px 12px rgba(0, 0, 0, .02);
+            transition: transform .25s, box-shadow .25s;
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .07)
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: .7rem
+        }
+
+        .card h3 {
+            font-size: .95rem;
+            font-weight: 700;
+            margin-bottom: .35rem
+        }
+
+        .card p {
+            font-size: .85rem;
+            color: #666;
+            line-height: 1.55
+        }
+
+        /* Callout */
+        .callout {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2.2rem;
+            margin: 2.5rem 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .04);
+            border: 1px solid rgba(0, 0, 0, .04)
+        }
+
+        .callout h3 {
+            font-size: 1.05rem;
+            margin-bottom: 1rem
+        }
+
+        .callout-dark {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: .7rem
+        }
+
+        .tl-item {
+            display: flex;
+            gap: 1.2rem;
+            align-items: baseline;
+            font-size: .88rem;
+            color: #777;
+            padding: .7rem 1rem;
+            border-radius: 10px;
+            transition: background .2s
+        }
+
+        .tl-item.active {
+            background: rgba(212, 80, 46, .06);
+            color: #333
+        }
+
+        .tl-year {
+            font-weight: 800;
+            font-size: .82rem;
+            color: #d4502e;
+            min-width: 65px
+        }
+
+        /* Persona */
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 1.3rem;
+            margin: 2rem 0
+        }
+
+        .persona-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.6rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, .03);
+            transition: transform .25s
+        }
+
+        .persona-card:hover {
+            transform: translateY(-3px)
+        }
+
+        .persona-emoji {
+            font-size: 2.2rem;
+            margin-bottom: .7rem
+        }
+
+        .persona-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: .5rem
+        }
+
+        .persona-trigger {
+            font-size: .8rem;
+            color: #999;
+            margin-bottom: .6rem;
+            flex: 1
+        }
+
+        .persona-done {
+            font-size: .8rem;
+            color: #555;
+            margin-bottom: 1rem;
+            font-style: italic;
+            line-height: 1.5
+        }
+
+        .persona-badge {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .3rem .8rem;
+            border-radius: 20px;
+            display: inline-block;
+            width: fit-content
+        }
+
+        .persona-badge.fire {
+            background: #fff0e5;
+            color: #d4502e
+        }
+
+        .persona-badge.growth {
+            background: #e5f8ee;
+            color: #15803d
+        }
+
+        .persona-badge.volume {
+            background: #eef0ff;
+            color: #4f46e5
+        }
+
+        /* JTBD */
+        .jtbd-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem
+        }
+
+        .jtbd-col {
+            padding: 1.2rem;
+            border-radius: 12px;
+            background: rgba(212, 80, 46, .03)
+        }
+
+        .jtbd-col h4 {
+            font-size: .82rem;
+            margin-bottom: .4rem;
+            color: #d4502e
+        }
+
+        .jtbd-col p {
+            font-size: .83rem;
+            color: #666
+        }
+
+        /* Two col */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0
+        }
+
+        /* Threats */
+        .threat-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 1.6rem
+        }
+
+        .threat-card h3 {
+            font-size: 1.05rem;
+            margin-bottom: .5rem
+        }
+
+        .threat-why {
+            font-size: .83rem;
+            color: #999;
+            margin-bottom: 1.2rem;
+            line-height: 1.55
+        }
+
+        .threat-list {
+            display: flex;
+            flex-direction: column;
+            gap: .7rem
+        }
+
+        .threat-item {
+            display: flex;
+            flex-direction: column;
+            padding: .7rem .9rem;
+            background: rgba(255, 255, 255, .03);
+            border-radius: 10px;
+            border-left: 3px solid #f0856a;
+            transition: background .2s
+        }
+
+        .threat-item:hover {
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .threat-item strong {
+            font-size: .83rem;
+            color: #f5f3f0
+        }
+
+        .threat-item span {
+            font-size: .76rem;
+            color: #888;
+            line-height: 1.45
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem
+        }
+
+        th {
+            background: rgba(255, 255, 255, .05);
+            padding: .75rem .9rem;
+            text-align: left;
+            font-weight: 700;
+            color: #ddd;
+            border-bottom: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        td {
+            padding: .65rem .9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            color: #bbb
+        }
+
+        td.win {
+            color: #4ade80;
+            font-weight: 600
+        }
+
+        td.lose {
+            color: #f87171;
+            font-weight: 600
+        }
+
+        /* Light tables */
+        .table-light {
+            border: 1px solid rgba(0, 0, 0, .06)
+        }
+
+        .table-light th {
+            background: rgba(0, 0, 0, .02);
+            color: #333;
+            border-bottom: 1px solid rgba(0, 0, 0, .06)
+        }
+
+        .table-light td {
+            color: #555;
+            border-bottom: 1px solid rgba(0, 0, 0, .04)
+        }
+
+        /* UX table */
+        .ux-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .82rem;
+            margin: 0
+        }
+
+        .ux-table th {
+            background: rgba(212, 80, 46, .04);
+            padding: .7rem .8rem;
+            text-align: left;
+            font-weight: 700;
+            color: #333;
+            border-bottom: 2px solid rgba(212, 80, 46, .12)
+        }
+
+        .ux-table td {
+            padding: .7rem .8rem;
+            border-bottom: 1px solid rgba(0, 0, 0, .04);
+            color: #555;
+            vertical-align: top
+        }
+
+        .ux-table tr:hover {
+            background: rgba(212, 80, 46, .02)
+        }
+
+        /* Flow */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .6rem;
+            margin: 2.5rem 0;
+            flex-wrap: wrap
+        }
+
+        .flow-step {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.6rem 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+            min-width: 145px;
+            flex: 1;
+            border: 1px solid rgba(0, 0, 0, .03);
+            transition: transform .2s
+        }
+
+        .flow-step:hover {
+            transform: translateY(-3px)
+        }
+
+        .flow-step-gap {
+            border: 2px dashed #ef4444;
+            background: #fef2f2;
+            box-shadow: none
+        }
+
+        .flow-icon {
+            font-size: 1.8rem;
+            margin-bottom: .5rem
+        }
+
+        .flow-step h4 {
+            font-size: .88rem;
+            margin-bottom: .3rem
+        }
+
+        .flow-step p {
+            font-size: .76rem;
+            color: #999
+        }
+
+        .flow-arrow {
+            font-size: 1.4rem;
+            color: #ccc;
+            font-weight: 800
+        }
+
+        /* Strengths */
+        .strengths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0
+        }
+
+        .strength {
+            display: flex;
+            gap: .8rem;
+            align-items: flex-start;
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.1rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .badge {
+            font-size: 1.1rem;
+            min-width: 28px;
+            text-align: center
+        }
+
+        .strength strong {
+            font-size: .88rem
+        }
+
+        .strength p {
+            font-size: .8rem;
+            color: #999;
+            margin-top: .15rem
+        }
+
+        /* Gaps */
+        .gap-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.3rem
+        }
+
+        /* Gap Cards - Clean Design */
+        .gap-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .gap-card {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .gap-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #d4502e;
+            background: rgba(212, 80, 46, 0.08);
+            min-width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .gap-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .gap-card p {
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.7;
+            margin-bottom: 0.8rem;
+        }
+
+        .gap-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .gap-card strong {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        /* Improvements */
+        .improvement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1.3rem;
+            margin: 2rem 0
+        }
+
+        .imp-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.6rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+            border-top: 4px solid transparent;
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, .03);
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            transition: transform .2s
+        }
+
+        .imp-card:hover {
+            transform: translateY(-3px)
+        }
+
+        .imp-card.p0 {
+            border-top-color: #ef4444
+        }
+
+        .imp-card.p1 {
+            border-top-color: #eab308
+        }
+
+        .imp-card.p2 {
+            border-top-color: #3b82f6
+        }
+
+        .imp-priority {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            font-size: .62rem;
+            font-weight: 800;
+            padding: .22rem .55rem;
+            border-radius: 5px;
+            letter-spacing: 1.2px
+        }
+
+        .p0 .imp-priority {
+            background: #fef2f2;
+            color: #dc2626
+        }
+
+        .p1 .imp-priority {
+            background: #fefce8;
+            color: #b45309
+        }
+
+        .p2 .imp-priority {
+            background: #eff6ff;
+            color: #2563eb
+        }
+
+        .imp-card h3 {
+            font-size: .93rem;
+            margin-bottom: .4rem;
+            padding-right: 3rem
+        }
+
+        .imp-card>p {
+            font-size: .8rem;
+            color: #666;
+            line-height: 1.55
+        }
+
+        .imp-meta {
+            display: flex;
+            gap: .5rem;
+            margin-top: .9rem;
+            flex-wrap: wrap
+        }
+
+        .imp-meta span {
+            font-size: .66rem;
+            font-weight: 600;
+            padding: .22rem .5rem;
+            border-radius: 5px;
+            background: #f7f7f5;
+            color: #888
+        }
+
+        /* Deep Dive */
+        .deep-dive {
+            margin: 3rem 0;
+            padding: 2.5rem;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .05);
+            border: 1px solid rgba(0, 0, 0, .04)
+        }
+
+        .deep-dive h3 {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem
+        }
+
+        /* Mockup */
+        .mockup {
+            background: #161625;
+            border-radius: 18px;
+            padding: 2rem;
+            max-width: 400px;
+            margin: 0 auto;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .06)
+        }
+
+        .mockup-header {
+            font-size: .68rem;
+            letter-spacing: 2.5px;
+            font-weight: 800;
+            color: #f0856a;
+            margin-bottom: 1.2rem
+        }
+
+        .mockup-score {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            margin-bottom: 1.5rem
+        }
+
+        .score-circle {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            border: 3.5px solid #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0
+        }
+
+        .score-num {
+            font-size: 2.2rem
+        }
+
+        .score-detail {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: .55rem
+        }
+
+        .score-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .73rem;
+            color: #aaa
+        }
+
+        .bar {
+            flex: 1;
+            height: 5px;
+            background: #2a2a3e;
+            border-radius: 3px;
+            overflow: hidden
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease
+        }
+
+        .mockup-verdict {
+            margin-bottom: 1.2rem
+        }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: .3rem .85rem;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 700
+        }
+
+        .verdict-badge.yellow {
+            background: rgba(234, 179, 8, .12);
+            color: #eab308
+        }
+
+        .mockup-verdict p {
+            font-size: .76rem;
+            color: #888;
+            margin-top: .5rem;
+            line-height: 1.5
+        }
+
+        .mockup-expand {
+            text-align: center;
+            font-size: .73rem;
+            color: #555
+        }
+
+        /* Share mockup */
+        .share-mockup {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0
+        }
+
+        .share-card {
+            background: #dcf8c6;
+            border-radius: 14px;
+            padding: 1.3rem 1.6rem;
+            max-width: 310px;
+            font-size: .8rem;
+            color: #333;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, .08)
+        }
+
+        .share-header {
+            font-size: .68rem;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            color: #666;
+            margin-bottom: .5rem
+        }
+
+        .share-stock {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: .3rem
+        }
+
+        .share-verdict {
+            margin-bottom: .5rem
+        }
+
+        .share-scores {
+            display: flex;
+            gap: .8rem;
+            font-size: .73rem;
+            font-weight: 600;
+            margin-bottom: .8rem
+        }
+
+        .share-cta {
+            font-style: italic;
+            color: #0a8d48;
+            font-size: .76rem
+        }
+
+        .share-footer {
+            font-size: .63rem;
+            color: #aaa;
+            margin-top: .6rem
+        }
+
+        /* Query analysis cards */
+        .query-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.8rem;
+            margin: 1.3rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .query-card h4 {
+            font-size: .95rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .query-label {
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: .2rem .6rem;
+            border-radius: 4px;
+            background: rgba(212, 80, 46, .06);
+            color: #d4502e
+        }
+
+        /* PM Questions - Redesigned */
+        .question-group {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .question-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #1f2937;
+            border-bottom: 2px solid rgba(212, 80, 46, 0.1);
+            padding-bottom: 0.8rem;
+            display: inline-block;
+        }
+
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .question {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.6;
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            margin: 0;
+        }
+
+        .question:last-child {
+            border-bottom: none;
+        }
+
+        .question::before {
+            content: "•";
+            color: #d4502e;
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1.4rem;
+        }
+
+        .question strong {
+            color: #1e1e2e
+        }
+
+        .q-num {
+            font-weight: 800;
+            color: #d4502e;
+            margin-right: .4rem
+        }
+
+        /* Data sources */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0
+        }
+
+        .data-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.4rem;
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .data-card h4 {
+            font-size: .88rem;
+            margin-bottom: .8rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: .4rem 0;
+            font-size: .8rem;
+            color: #666;
+            border-bottom: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .data-item:last-child {
+            border: none
+        }
+
+        .data-refresh {
+            font-size: .7rem;
+            font-weight: 600;
+            color: #d4502e
+        }
+
+        /* Metrics Section */
+        .metric-list {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+            margin-top: 1rem
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .65rem .9rem;
+            background: #fff;
+            border-radius: 10px;
+            font-size: .84rem;
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .metric-target {
+            font-weight: 700;
+            color: #d4502e;
+            font-size: .78rem
+        }
+
+        /* Strategy */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+            gap: 1.2rem
+        }
+
+        .strat-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 14px;
+            padding: 1.6rem;
+            transition: all .25s
+        }
+
+        .strat-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .strat-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #f0856a;
+            margin-bottom: .5rem
+        }
+
+        .strat-card h3 {
+            font-size: .93rem;
+            margin-bottom: .4rem
+        }
+
+        .strat-card p {
+            font-size: .8rem;
+            color: #999;
+            line-height: 1.55
+        }
+
+        /* Stakeholders */
+        .stake-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0
+        }
+
+        .stake-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.4rem;
+            border: 1px solid rgba(0, 0, 0, .03)
+        }
+
+        .stake-card h4 {
+            font-size: .9rem;
+            margin-bottom: .3rem
+        }
+
+        .stake-goal {
+            font-size: .78rem;
+            color: #d4502e;
+            font-weight: 600;
+            margin-bottom: .5rem
+        }
+
+        .stake-card p {
+            font-size: .8rem;
+            color: #666
+        }
+
+        .stake-explore {
+            font-size: .76rem;
+            color: #999;
+            margin-top: .5rem;
+            font-style: italic;
+            line-height: 1.5
+        }
+
+        /* Product deconstruction image */
+        .deconstruction-img {
+            width: 100%;
+            border-radius: 18px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, .08);
+            border: 1px solid rgba(0, 0, 0, .06)
+        }
+
+        /* Footer */
+        footer {
+            background: #161625;
+            color: #aaa;
+            padding: 3.5rem 0;
+            text-align: center
+        }
+
+        .footer-text {
+            max-width: 700px;
+            margin: 0 auto 1.2rem;
+            font-size: .83rem;
+            line-height: 1.75;
+            color: #777
+        }
+
+        .footer-sig {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #f0856a;
+            font-style: italic
+        }
+
+        /* Divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 80, 46, .15), transparent);
+            margin: 0 auto;
+            max-width: 200px
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media(max-width:768px) {
+            .nav-links {
+                display: none
+            }
+
+            .two-col,
+            .jtbd-grid {
+                grid-template-columns: 1fr
+            }
+
+            .flow-diagram {
+                flex-direction: column
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg)
+            }
+
+            #hero {
+                padding: 7rem 1.2rem 4rem
+            }
+
+            .section {
+                padding: 3.5rem 0
+            }
+
+            .container {
+                padding: 0 1.2rem
+            }
+
+            .gap-card {
+                flex-direction: column;
+                gap: .8rem
+            }
+
+            .stake-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .atomic-unit-tree {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 16px;
+            line-height: 1.8;
+        }
+
+        .e2e-flow-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .flow-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.8rem;
+            width: 100%;
+            max-width: 650px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .flow-box.warning {
+            border-left: 5px solid #f59e0b;
+        }
+
+        .flow-box.error {
+            border-left: 5px solid #ef4444;
+        }
+
+        .box-tag {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #d4502e;
+            text-transform: uppercase;
+        }
+
+        .flow-decision {
+            background: #fdf2ee;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
+            border: 1.5px dashed #d4502e;
+            margin: 1.5rem 0;
+            font-weight: 700;
+            color: #d4502e;
+        }
+
+        .flow-connector {
+            color: #ddd;
+            font-size: 1.4rem;
+            margin: 0.8rem 0;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.6rem;
+        }
+
+        .status-grid span {
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 0.4rem;
+            border-radius: 6px;
+            text-align: center;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .status-grid span.cross {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .result-leak {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #b91c1c;
+            margin-top: 1.2rem;
+        }
+
+        /* Optimization Cards - Clean Design */
+        .optimize-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0 3.5rem 0;
+        }
+
+        .optimize-card {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 1.8rem 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .optimize-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: rgba(212, 80, 46, 0.06);
+            width: 64px;
+            height: 64px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: #d4502e;
+        }
+
+        .optimize-title {
+            font-weight: 800;
+            color: #1f2937;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .optimize-desc {
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .optimize-highlight {
+            color: #d4502e;
+            font-weight: 600;
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .optimize-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin: 2rem 0;
+            }
+
+            .optimize-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Metric tables in dark section */
+        .table-dark .ux-table th {
+            background: rgba(255, 255, 255, .05);
+            color: #e0e0e0;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
+        }
+
+        .table-dark .ux-table td {
+            color: #b0b0b0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .table-dark .ux-table tr:hover {
+            background: rgba(255, 255, 255, .03);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav id="topnav">
+        <div class="nav-inner">
+            <span class="nav-brand">PRODUCT TEARDOWN</span>
+            <div class="nav-links">
+                <a href="#context">Context</a><a href="#personas">Personas</a><a href="#competition">Competition</a>
+                <a href="#flow">Flow</a><a href="#ux">UX Audit</a><a href="#gaps">Gaps</a>
+                <a href="#improvements">Solutions</a><a href="#metrics">Metrics</a>
+            </div>
+        </div>
+    </nav>
+
+    <header id="hero">
+        <div class="hero-inner">
+            <p class="hero-label">PRODUCT TEARDOWN</p>
+            <h1>StockGro’s Stoxo</h1>
+            <p class="hero-sub">The Query-to-Decision Flow</p>
+            <div class="hero-meta">
+                <span>Created by Sudhanshu</span>
+            </div>
+            <a href="#why" class="hero-cta">Read Teardown ↓</a>
+        </div>
+    </header>
+
+    <!-- 00: Why This Flow -->
+    <section id="why" class="section">
+        <div class="container narrow fade-in">
+            <span class="section-num">00</span>
+            <h2>Why This Flow, and Not the Whole Product</h2>
+            <p class="lead">Stoxo's value lives or dies in one single interaction:</p>
+            <blockquote>A user types a question → gets an answer they trust enough to act on.</blockquote>
+            <p>Every other metric (retention, conversion to Stoxo PRO, NPS, revenue) is downstream of this atomic loop.
+                If it works, everything else follows. If the answer is slow, vague, or feels like ChatGPT, they'll never
+                come back.</p>
+        </div>
+    </section>
+
+    <!-- 01: Context -->
+    <section id="context" class="section section-warm">
+        <div class="container fade-in">
+            <span class="section-num">01</span>
+            <h2>Context: Why This Matters Right Now for StockGro</h2>
+            <p class="lead">Before diving into the product, it's critical to understand the <strong>market
+                    moment</strong> we're in, because every product decision should serve business reality.</p>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">📈</div>
+                    <h3>India's Retail Investor Boom Continues</h3>
+                    <p><strong>216M demat accounts</strong> by Dec 2025 (up from 185M in 2024). <strong>127M unique
+                            investors</strong> in FY26 vs 27M in FY19. StockGro's 35M user base = 27.5% of India's total
+                        investor population. The TAM is massive but competition for mind-share is intense.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚠️</div>
+                    <h3>But Growth Is Slowing</h3>
+                    <p>Demat account growth slowed to <strong>16.5% in 2025</strong> (slowest since 2019), down from 32%
+                        in FY23. Only 30.6M new accounts in 2025 vs 46M in 2024 (-33%). <strong>Retention and
+                            monetization matter more than gross adds now.</strong> Product quality > paid ads.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💸</div>
+                    <h3>F&O Traders Are Bleeding Money</h3>
+                    <p><strong>9 out of 10 retail F&O traders lost money in FY25</strong>, with net losses surging to
+                        <strong>₹1.06 lakh crore</strong>. SEBI tightened F&O rules in Nov 2024. This validates Stoxo's
+                        positioning as a research-first tool. The regulatory tailwind is real.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💰</div>
+                    <h3>Latest Funding Shows Investor Confidence</h3>
+                    <p>StockGro raised <strong>$13M in Dec 2025</strong> (BITKRAFT Ventures) + <strong>₹150Cr from Mukul
+                            Agrawal</strong>. Total raised: <strong>$108.57M</strong> across 12 rounds. Investors are
+                        betting on AI-powered advisory, but runway matters and burn rate must align with monetization
+                        velocity.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚖️</div>
+                    <h3>SEBI AI Compliance Deadline Is NOW</h3>
+                    <p>RAs/IAs must <strong>disclose AI usage to clients by April 30, 2025</strong> (effective Dec
+                        2024). Governance frameworks, testing, bias detection, human oversight all mandatory. Stoxo's
+                        SEBI RA compliance is a moat <em>only if users can see it</em>. The April 2025 deadline means
+                        competitors are scrambling. Transparency = trust = conversion.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <h3>Broker AIs Just Launched in 2025</h3>
+                    <p><strong>Zerodha Kite MCP</strong> (May 2025): Users can now connect portfolios to Claude/Cursor
+                        for free. <strong>Groww AI</strong> (Aug 2025): In-house agentic AI with trade execution via
+                        natural language. The competitive threat is <strong>live, not theoretical</strong>.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🧠</div>
+                    <h3>Standalone AIs Have Proprietary Models</h3>
+                    <p><strong>Fuzz by Dhan</strong> (Dec 2025): Powered by <strong>Artham SLM</strong>, a 7B-parameter
+                        model trained on 70% public + 30% proprietary Indian financial data. Portfolio + ITR
+                        integration. Fuzz has a proprietary Indian-market AI model. Stoxo likely doesn't (not
+                        disclosed). The moat must come from data (35M users) + trust (SEBI RA), not the LLM itself.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎫</div>
+                    <h3>The Credit System Is the Conversion Lever</h3>
+                    <p>Logged-in non-premium users see <strong>"5/5 queries"</strong> limit. After that, paywall to
+                        Stoxo PRO. This is the monetization chokepoint. Is 5 queries the right number? Too few = user
+                        doesn't see value. Too many = no conversion pressure.</p>
+                </div>
+            </div>
+            <div class="callout">
+                <h3>The Strategic Inflection Point</h3>
+                <div class="timeline">
+                    <div class="tl-item"><span class="tl-year">2023-24</span><span>User acquisition via paid marketing.
+                            Grow at all costs.</span></div>
+                    <div class="tl-item"><span class="tl-year">2025</span><span>Growth capital deployed. Broker AIs
+                            launch. SEBI tightens compliance. F&O traders lose ₹1L Cr+.</span></div>
+                    <div class="tl-item active"><span class="tl-year">2026 (Now)</span><span>Unit economics matter.
+                            Conversion > acquisition. Product quality > CAC.</span></div>
+                </div>
+                <p class="muted" style="margin-top:1.5rem"><strong>Bottom line:</strong> While India’s total AI market
+                    scales toward $7.8B, the fintech sector is growing at a 20% CAGR.
+                    The landscape has shifted: Groww (12.5M active users) and Zerodha (8M active
+                    users) made portfolio-personalized AI a free commodity in 2025. Specialized players
+                    like Fuzz are already running proprietary Indian-market LLMs. Having
+                    passed SEBI’s April 2025 AI disclosure deadline, the industry is now highly
+                    regulated. StockGro sits on a massive 35M user dataset and fresh capital,
+                    but Stoxo must now prove why users should pay for research when brokers provide it for free. The
+                    window to build a unique moat is closing fast.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 02: Personas -->
+    <section id="personas" class="section">
+        <div class="container fade-in">
+            <span class="section-num">02</span>
+            <h2>Who Uses This Flow?</h2>
+            <p class="lead">Behavioral segments, not demographics, because investment behavior determines what "a good
+                answer" actually means.</p>
+            <div class="persona-grid">
+                <div class="persona-card">
+                    <div class="persona-emoji">🔍</div>
+                    <h3>The Validator</h3>
+                    <p class="persona-trigger">Heard a tip on YouTube, Telegram, or WhatsApp group. Wants to verify
+                        before risking real money. 3-5x/week, event-driven.</p>
+                    <p class="persona-done">"Is this stock safe at ₹780?" → Clear Yes/No + data-backed reasoning in
+                        &lt;60 sec</p>
+                    <p class="muted">Current alt: Google → 5 tabs → confused → blind-follows or skips entirely</p>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-emoji">⚖️</div>
+                    <h3>The Comparator</h3>
+                    <p class="persona-trigger">Has ₹50K-2L to deploy. Shortlisted 2-3 stocks. Can't decide. 2-3x/month.
+                    </p>
+                    <p class="persona-done">"Compare TCS vs Infosys" → Side-by-side on what matters, with a clear winner
+                    </p>
+                    <p class="muted">Current alt: Opens Screener.in + Tickertape + Moneycontrol in 3 tabs → 20 min
+                        manual comparison</p>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-emoji">📊</div>
+                    <h3>The Tracker</h3>
+                    <p class="persona-trigger">Holds 8-15 stocks. Quarterly results just dropped. Needs: hold or exit?
+                        Weekly during earnings season.</p>
+                    <p class="persona-done">"How did TCS Q3 results look?" → Quick summary + whether to hold or exit</p>
+                    <p class="muted">Current alt: Reads ET/MC article → decodes → asks WhatsApp group → 10 conflicting
+                        opinions</p>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-emoji">📚</div>
+                    <h3>The Learner</h3>
+                    <p class="persona-trigger">New to markets (&lt;6 months). Doesn't know what to ask. Learning from
+                        StockGro. Daily, high volume.</p>
+                    <p class="persona-done">"What is PE ratio?" → Explanation that sticks, in simple language</p>
+                    <p class="muted">Current alt: YouTube → 30 min video → forgets by tomorrow</p>
+                </div>
+            </div>
+
+            <div class="callout">
+                <h3>Conversion Insight</h3>
+                <div class="table-wrap table-light">
+                    <table class="ux-table">
+                        <thead>
+                            <tr>
+                                <th>Persona</th>
+                                <th>Conversion Potential to Stoxo PRO</th>
+                                <th>Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Validator</strong></td>
+                                <td>🔥 Highest</td>
+                                <td>Immediate trading intent. If Stoxo saves them from one bad trade, they'll pay.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Comparator</strong></td>
+                                <td>🔥 High</td>
+                                <td>Capital ready to deploy. Will pay for depth + clarity.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tracker</strong></td>
+                                <td>📈 Highest LTV</td>
+                                <td>Returns weekly during earnings. Habitual. Will pay for convenience.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Learner</strong></td>
+                                <td>📊 Volume play</td>
+                                <td>Needs to graduate to Validator/Comparator to generate revenue. Stoxo is the
+                                    graduation path.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="muted" style="margin-top:1rem"><strong>Key question:</strong> What % of Stoxo queries come
+                    from each persona? The answer should drive feature prioritization. If 70% of queries are from
+                    Learners but 80% of revenue comes from Validators, the product should optimize for Validators first.
+                </p>
+            </div>
+
+            <h3 style="margin-top:3rem">Jobs to Be Done : Beyond Functional</h3>
+            <div class="table-wrap table-light">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th>Persona</th>
+                            <th>🧠 Functional JTBD</th>
+                            <th>❤️ Emotional JTBD</th>
+                            <th>👥 Social JTBD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Validator</strong></td>
+                            <td>Give me a data-backed second opinion so I don't rely on unverified tips</td>
+                            <td>I don't want to feel stupid for losing money on a WhatsApp forward</td>
+                            <td>I want to tell friends "I research before I invest - I'm not a gambler"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Comparator</strong></td>
+                            <td>Show me which stock wins across the metrics that matter, with a clear recommendation
+                            </td>
+                            <td>I want to feel like I made the smartest possible choice with limited capital</td>
+                            <td>I want to be the person in my group who makes "informed" picks</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tracker</strong></td>
+                            <td>Tell me if something changed about my holdings that requires action - right now</td>
+                            <td>I don't want to be the last to react to bad quarterly results</td>
+                            <td>I want to sound informed when friends ask "what happened to TCS today?"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Learner</strong></td>
+                            <td>Explain it like I'm 22 and from Nagpur (not a stock nerd)</td>
+                            <td>I want to feel like I belong in the stock market, not like an outsider</td>
+                            <td>I want to say "I'm into investing" and mean it</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 03: Stakeholders -->
+    <section class="section section-warm">
+        <div class="container fade-in">
+            <span class="section-num">03</span>
+            <h2>Stakeholders Beyond the User</h2>
+            <div class="table-wrap table-light" style="margin: 2rem 0;">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Stakeholder</th>
+                            <th style="width: 25%;">Their Goal</th>
+                            <th style="width: 25%;">How the Query Flow Serves Them</th>
+                            <th style="width: 35%;">Here's What I'd Explore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>StockGro (Business)</strong></td>
+                            <td>Convert free users from 35M to Stoxo PRO (₹550-₹1,100). Needs high-margin revenue to
+                                justify continued AI infrastructure investment.</td>
+                            <td>Free users get 5 lifetime queries → hit limit → upsell to Stoxo PRO (20 queries/day).
+                                Credit system creates natural conversion trigger.</td>
+                            <td><strong>5 lifetime queries feels like aggressive gating.</strong> Users get ONE shot to
+                                be convinced. If any of those 5 queries return a suboptimal response, the entire free
+                                experience is tainted.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Broker Partners (Potential)</strong></td>
+                            <td>Want trade volume. Every Stoxo user who researches = potential trade.</td>
+                            <td>If Stoxo deep-links to brokers for that Ticker verdict → CPA/affiliate revenue. However,
+                                brokers (Zerodha, Groww) are building their own AI, partnership incentives may be low.
+                            </td>
+                            <td><strong>In-ecosystem actions first.</strong> "Add to Virtual Portfolio" / "Simulate This
+                                Trade" keeps users inside StockGro. Broker deep-links become viable later once Stoxo has
+                                enough DAU leverage to integrate AA.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Content Creators / Community/ SEBI Analysts</strong></td>
+                            <td>Want to share insights and build credibility within StockGro ecosystem</td>
+                            <td>Stoxo analyses could be shared to community channels</td>
+                            <td><strong>No sharing mechanism.</strong> Analysis dies in the chat window.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Market Data Vendors</strong> (NSE/BSE feeds)</td>
+                            <td>Monetize data access (API calls). Prevent unauthorized redistribution of real-time
+                                data.</td>
+                            <td>Stoxo fetches "live" prices, PE ratios, technicals. The vendor gets paid per API call.
+                            </td>
+                            <td><strong>Caching strategy transparency.</strong> Is Stoxo hitting the vendor API for
+                                every "What is Reliance's price?" query (expensive), or caching for 5 min? If 1,000
+                                users ask about TCS today, does Stoxo call the API 1,000 times or once?</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LLM Providers</strong> (OpenAI, Anthropic)</td>
+                            <td>Usage volume (tokens). They benefit from long, complex prompts that maximize billable
+                                tokens.</td>
+                            <td>Every user query + RAG (retrieved context) = significant token consumption. Stoxo
+                                converts user intent into billable API calls.</td>
+                            <td><strong>Cost-per-query limits.</strong> A free user asking 5 complex "Analyze this
+                                balance sheet" queries could cost ₹X+ in LLM fees alone.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Corporate HR / Wellness Partners</strong></td>
+                            <td>Improving <strong>Employee Financial Resilience</strong>. They need to reduce workplace
+                                stress caused by personal debt/bad trades without taking on advisory liability.</td>
+                            <td>Stoxo acts as a <strong>"Regulatory Firewall."</strong> Employees get 24/7
+                                institutional-grade research (SEBI RA compliant) that keeps them away from unregulated
+                                "finfluencer" tips.</td>
+                            <td><strong>The "Financial Health Scorecard":</strong> Stoxo lacks an <strong>Aggregate
+                                    Sentiment & Literacy Dashboard.</strong> HR cannot prove ROI.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>College/University Partners</strong> (1000+ campus tie-ups)</td>
+                            <td>They need to provide "Bloomberg-level" exposure to 1,000+ students simultaneously
+                                without the ₹20L/year per-terminal cost.</td>
+                            <td>Students use Stoxo for project research and assignments. It democratizes access to
+                                "premium" data that previously required ₹20L/year Bloomberg subscriptions.</td>
+                            <td><strong>Academic citation mode.</strong> Students need citations for coursework. Stoxo
+                                gives answers but lacks specific "Source: TCS FY24 Annual Report, Page 45" citations
+                                that academic partners require for credibility.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Internal Compliance & Legal</strong></td>
+                            <td>Plausible deniability. They need to prove Stoxo is a "tool," not an "advisor," to avoid
+                                triggering IA (Investment Advisor) regulations.</td>
+                            <td>The disclaimer footer ("To err is human, I am just an AI") and the framing of verdicts
+                                as general research rather than personal advice.</td>
+                            <td><strong>Audit trails for hallucinations.</strong> If Stoxo accidentally invents a fake
+                                dividend yield and a user acts on it, where is the log? The "Why did the AI say this?"
+                                explainability layer is missing. A "View Sources" button on each response would serve
+                                both the user (trust) and compliance (audit trail).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout">
+                <h3>Unit Economics Insight</h3>
+                <p style="font-size:.9rem;color:#555;">If Stoxo's average cost-per-query is ₹1.50 (LLM + data +
+                    infrastructure), and a free user gets 5 lifetime queries, that's ₹7.5 in inference costs per free
+                    user in addition to any marketing spend. At 35M users with even 5% trying Stoxo, that's ₹1.31Cr in
+                    inference costs just for free-tier sampling.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04: Competition -->
+    <section id="competition" class="section section-dark">
+        <div class="container fade-in">
+            <span class="section-num">04</span>
+            <h2>Competitive Landscape - The Real Picture</h2>
+            <p class="lead">The threat isn't Screener.in or ChatGPT. It's a <strong>two-front war</strong>.</p>
+            <blockquote class="big-quote">Front 1: Brokers are embedding FREE* AI research inside trading
+                platforms.<br>Front 2: Standalone AI research tools are building their own proprietary models.
+            </blockquote>
+            <!-- Broker AI Table -->
+            <h3 style="margin-top:2rem">Broker AI Threat (Bundled + Free + Trade-Enabled)</h3>
+            <div class="table-wrap table-dark">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Broker AI</th>
+                            <th style="width: 40%;">What They Offer</th>
+                            <th style="width: 40%;">Why It Threatens Stoxo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Groww AI</strong></td>
+                            <td><strong>~12.5M Active Users.</strong> In-house agentic AI model. Analyzes complete
+                                investment history, risk profiles. Can research, analyze, <strong>AND</strong> execute
+                                trades via natural language.</td>
+                            <td>Research → Conviction → Trade → Track, all without leaving the app. It turns research
+                                into a "feature," not a "product."</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zerodha Kite MCP</strong></td>
+                            <td><strong>~8M Active Users.</strong> Connects Zerodha to Claude/GPT via Model Context
+                                Protocol. Portfolio-personalized analysis, backtesting, and custom indicators.</td>
+                            <td>It lets users "Bring Their Own AI" (BYO-AI). Users get institutional-grade analysis for
+                                free by linking their own keys. Zero switching cost for Zerodha loyalists.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Angel One ARQ Prime</strong></td>
+                            <td><strong>~7M Active Users.</strong> ML engine active since 2017. Offers
+                                hyper-personalized
+                                "Rule-Based" advice and automated portfolio rebalancing alerts based on real-time market
+                                data.</td>
+                            <td>AI-powered Super App since July 2023. Has years of training data on Indian retail
+                                investors.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>INDmoney Mind</strong></td>
+                            <td><strong>~6M Active Users.</strong> Super Money App with AI analysis</td>
+                            <td>Already a super-app with net worth tracking, US stocks, FDs, mutual funds, UPI & almost
+                                everything</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Standalone AI Table -->
+            <h3 style="margin-top:3rem">Standalone AI Research Threat (Specialized + Proprietary Models)</h3>
+            <div class="table-wrap table-dark">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">AI Tool</th>
+                            <th style="width: 45%;">What They Claim</th>
+                            <th style="width: 40%;">Why It's Worth Watching</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fuzz by Dhan (Artham SLM)</strong></td>
+                            <td>India's first Small Language Model (SLM) built for Indian capital markets. Source-backed
+                                outputs linking to regulatory filings/exchange data. Deep Research mode. Portfolio + ITR
+                                integration. Powered by Artham - 7B-parameter model trained on Indian financial
+                                vocabulary, regulations, and market structure.</td>
+                            <td>Backed by a broker (Dhan). If the proprietary model delivers meaningfully better
+                                India-specific insights than generic LLM wrappers, this combination of specialized AI +
+                                trade loop is hard to compete with.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LiMo by Liquide</strong></td>
+                            <td>AI-powered research assistant supervised by SEBI-registered experts. Buy/Sell/Hold
+                                recommendations for NSE stocks. Unlimited reports with Liquide One membership.</td>
+                            <td>Similar positioning to Stoxo: AI + SEBI expert. The question is whether their execution
+                                matches the positioning - but the overlap in value proposition is real.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="http://multibagg.ai/"
+                                    style="color: inherit; text-decoration: underline;"><strong>Multibagg.ai</strong></a>
+                            </td>
+                            <td>AI-native equity research platform with "Iris" chatbot for deep research. Processes
+                                exchange filings (investor presentations, concalls, annual reports) and tags companies
+                                into thematic categories in near real-time. Portfolio dashboard via broker account
+                                connection. 100+ screener filters.</td>
+                            <td>Focuses on the <strong>research depth</strong> angle - annual reports, concall
+                                summaries, IPO RHP analysis. If a user's primary need is deep fundamental research (not
+                                quick verdicts), Multibagg's may serve them better than Stoxo's conversational format.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a href="http://tradl.in/"
+                                    style="color: inherit; text-decoration: underline;"><strong>Tradl.in</strong></a>
+                            </td>
+                            <td>AI-powered quant screening platform. Users ask in plain English ("Find stocks near 52W
+                                High with RSI divergence") and get code-powered, structured results from real-time APIs.
+                                Expert-built pre-built screens. Real-time tracking of stock additions/drops.</td>
+                            <td>Addresses a different but adjacent need: <strong>stock discovery and screening</strong>,
+                                not stock analysis. But if a user discovers stocks on Tradl.in, they might analyze them
+                                there too - rather than coming to Stoxo. The risk is losing the top of the research
+                                funnel.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-dark" style="margin-top:3rem">
+                <h3>Why this is a two-front war:</h3>
+                <ul style="list-style:none;font-size: .95rem; color:#bbb;line-height:1.8;padding:0">
+                    <li style="margin-bottom: 1rem;">• <strong>Broker AIs</strong> threaten with distribution (free,
+                        bundled, 27M+ active user base) + trade execution. Their advantage is structural - they own the
+                        transaction layer.</li>
+                    <li style="margin-bottom: 1rem;">• <strong>Standalone AIs</strong> (Fuzz, LiMo, Multibagg, Tradl)
+                        threaten with specialized approaches - proprietary models, filing-level depth, quant screening.
+                        Their advantage is focus.</li>
+                    <li style="margin-bottom: 1rem;">• Stoxo sits between these two forces: it has neither trade
+                        execution NOR a proprietary Indian-market AI model. But what Stoxo has that none of them do: 35M
+                        users' behavioral data from StockGro. (That's a proprietary dataset)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 05: The Atomic Unit -->
+    <section id="flow" class="section section-warm">
+        <div class="container fade-in">
+            <span class="section-num">05</span>
+            <h2>5. The Atomic Unit - What Happens in a Single Query</h2>
+            <p class="lead">Stoxo's value lives or dies in one single interaction. Like in Swiggy, the atomic unit is
+                the <strong>Order</strong>. In Stoxo, it's the <strong>Query-Response Pair</strong>.</p>
+
+            <h3>5.1 The System Flow</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-icon">💬</div>
+                    <h4>User Query</h4>
+                    <ul
+                        style="font-size: .65rem; color: #666; text-align: left; padding-left: 0.5rem; list-style: none;">
+                        <li>- Intent: validate / compare / learn / track</li>
+                        <li>- Entity: stock name, sector, index</li>
+                        <li>- Context: price anchor, time horizon, risk preference</li>
+                    </ul>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon">⚙️</div>
+                    <h4>Processing</h4>
+                    <ul
+                        style="font-size: .65rem; color: #666; text-align: left; padding-left: 0.5rem; list-style: none;">
+                        <li>- Stock identification (e.g., maps "Tata Motors" → ticker)</li>
+                        <li>- Sector classification</li>
+                        <li>- Fundamentals + Technicals + News fetch</li>
+                    </ul>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon">📈</div>
+                    <h4>Response</h4>
+                    <ul
+                        style="font-size: .65rem; color: #666; text-align: left; padding-left: 0.5rem; list-style: none;">
+                        <li>- Sector Overview: M.Cap, ROE, Breadth</li>
+                        <li>- Stock Snapshot: Price, P/E, P/B, Technicals</li>
+                        <li>- Stoxo Stock Score: Overall /5+ sub-scores</li>
+                        <li>- Follow-up/Feedback: Cards + Thumbs</li>
+                        <li>- Community Context: Sentiment Moat</li>
+                    </ul>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step flow-step-gap">
+                    <div class="flow-icon">🚪</div>
+                    <h4>Action</h4>
+                    <p>⚠️ THE CONVERSION BRIDGE<br>(Currently a Strategic Gap)</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <p class="muted" style="text-align: center; margin-bottom: 2rem;">every product decision should optimize
+                    this atomic unit:</p>
+                <div class="optimize-grid">
+                    <div class="optimize-card">
+                        <div class="optimize-icon">💬</div>
+                        <span class="optimize-title">The Query</span>
+                        <p class="optimize-desc">Making it easier to form</p>
+                        <span class="optimize-highlight">Cold-start prompts • Personalization • Voice</span>
+                    </div>
+                    <div class="optimize-card">
+                        <div class="optimize-icon">⚡</div>
+                        <span class="optimize-title">The Response</span>
+                        <p class="optimize-desc">Making it more useful</p>
+                        <span class="optimize-highlight">Verdict card • Visual hierarchy • Charts</span>
+                    </div>
+                    <div class="optimize-card">
+                        <div class="optimize-icon">🖱️</div>
+                        <span class="optimize-title">The Action</span>
+                        <p class="optimize-desc">Making it natural</p>
+                        <span class="optimize-highlight">Share • Save • Trade • Alert</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>5.2 End-to-End Flow</h3>
+            <div class="e2e-flow-vertical">
+                <!-- Box 1 -->
+                <div class="flow-box">
+                    <div class="box-content">
+                        <div class="box-tag">ENTRY</div>
+                        <h4>USER ENTRY</h4>
+                        <p>Opens <code>stockgro.club/stoxo</code> (or Stoxo in app)<br>
+                            Sees: Chat input + "What are smart investors asking..."<br>
+                            Prompt cards with live market-event queries</p>
+                    </div>
+                </div>
+
+                <!-- Decision -->
+                <div class="flow-decision">
+                    <div class="decision-text">Types own query <span class="or">OR</span> clicks prompt card</div>
+                </div>
+
+                <!-- Box 2 -->
+                <div class="flow-box">
+                    <div class="box-content">
+                        <div class="box-tag">NLP</div>
+                        <h4>NLP PROCESSING (hypothesis)</h4>
+                        <p>• Classify intent (validate/compare/learn/track)<br>
+                            • Extract entity (stock name, sector, index)<br>
+                            • Identify context (price anchor, timeframe)<br>
+                            • Route to appropriate response template</p>
+                    </div>
+                </div>
+
+                <div class="flow-connector">▼</div>
+
+                <!-- Box 3 -->
+                <div class="flow-box">
+                    <div class="box-content">
+                        <div class="box-tag">DATA</div>
+                        <h4>DATA RETRIEVAL + SYNTHESIS (hypothesis)</h4>
+                        <p>• Real-time price, fundamentals, technicals from feeds<br>
+                            • News sentiment + social media tone<br>
+                            • Peer data for comparison queries<br>
+                            • (Hypothesized) StockGro community behavioral data<br>
+                            • Synthesize into structured analysis</p>
+                    </div>
+                </div>
+
+                <div class="flow-connector">▼</div>
+
+                <!-- Box 4 -->
+                <div class="flow-box warning">
+                    <div class="box-content">
+                        <div class="box-tag">COMPLIANCE</div>
+                        <h4>VALIDATION LAYER (?)</h4>
+                        <p>⚠️ <strong>A PRODUCT ARCHITECTURE QUESTION WORTH ASKING:</strong><br><br>
+                            StockGro holds SEBI RA registration for the company. This means the company is licensed to
+                            publish general research and recommendations on securities. It does NOT mean every
+                            individual chat response is reviewed by a SEBI analyst in real-time. At scale (potentially
+                            thousands of queries/day), per-query human review isn't feasible.<br><br>
+                            What this likely means in practice:<br>
+                            • The AI model, data sources, and response templates are designed within SEBI RA compliance
+                            guardrails<br>
+                            • Published research content (editorial) may have analyst oversight<br>
+                            • Individual chat queries rely on the system's compliance architecture, not per-query human
+                            review<br><br>
+                            The product implication: the "SEBI RA" trust signal needs to honestly represent what it
+                            covers. Users should understand they're getting AI-generated research from a SEBI-registered
+                            company, not analyst-reviewed personal advice.</p>
+                    </div>
+                </div>
+
+                <div class="flow-connector">▼</div>
+
+                <!-- Box 5 -->
+                <div class="flow-box">
+                    <div class="box-content">
+                        <div class="box-tag">OUTPUT</div>
+                        <h4>RESPONSE DELIVERED (OBSERVED)</h4>
+                        <p>• "Thinking Path" visible (shows reasoning in real-time)<br>
+                            • Sector Overview: M.Cap, ROE, 1Y Returns, Breadth<br>
+                            • Stock Snapshot: Price, P/E, P/B, ROCE<br>
+                            • Technicals: RSI, MACD, SMA/EMA, Bollinger, SAR<br>
+                            • Color-coded Verdict: Green/Yellow/Red + reasoning<br>
+                            • DO / DON'T actionable guidance<br>
+                            • Stoxo Stock Score: Overall /5+ Fundamentals/Risk/Momentum<br>
+                            • News sentiment with specific deal/event mentions<br>
+                            • Suggested follow-up queries (clickable cards)<br>
+                            • Disclaimer: "To err is human, I am just an AI"</p>
+                    </div>
+                </div>
+
+                <div class="flow-connector">▼</div>
+
+                <!-- Box 6 -->
+                <div class="flow-box error">
+                    <div class="box-content">
+                        <div class="box-tag">GAP</div>
+                        <h4>POST-RESPONSE - WHERE VALUE STILL LEAKS</h4>
+                        <p>✅ Ask follow-up question → stays in flow<br>
+                            ✅ Rate response → Thumbs up/down on each response<br>
+                            ❌ Share to WhatsApp → NOT possible<br>
+                            ❌ Set price alert → NOT possible<br>
+                            ❌ Trade on broker/virtual → NOT possible<br>
+                            ❌ Add to watchlist → NOT possible<br>
+                            ❌ Clear subscribe upsell → NOT present</p>
+                        <p class="result-leak">Result: User gets insight → exits → opens broker/paper → Stoxo gets ZERO
+                            credit, ZERO revenue.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 06: UX Deconstruction -->
+    <section id="ux" class="section">
+        <div class="container fade-in">
+            <span class="section-num">06</span>
+            <h2>6. UX Deconstruction - What I Actually Saw</h2>
+
+            <h3>How Users Find Stoxo - Entry Points</h3>
+            <p class="lead">Each entry point carries different intent and expectations:</p>
+            <div class="table-wrap table-light">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Entry Point</th>
+                            <th>User Intent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Direct access via link</strong> (<a href="https://stoxo.stockgro.club/"
+                                    target="_blank">stoxo.stockgro.club</a>)</td>
+                            <td>High intent - user was told about Stoxo specifically (word-of-mouth, shared link, Google
+                                search).</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Through StockGro login</strong> (web or mobile app)</td>
+                            <td>Medium intent - user is already inside StockGro and discovers Stoxo as a feature.</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Through social advertising</strong></td>
+                            <td>Low-to-medium intent - user saw an ad (LinkedIn, YouTube, Twitter). Cold traffic.</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Through Stoxo-specific mobile push notifications</strong></td>
+                            <td>Re-engagement - user has the app, got notification, if found personalized clicking to
+                                engage.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="margin-top:3rem">How Users Access Stoxo - Authentication & Query Limits</h3>
+            <p style="margin-bottom: 1.5rem;">Stoxo has a layered access model that gates features based on login status
+                and platform:</p>
+
+            <p style="margin-top: 2rem;"><strong>Without Login:</strong></p>
+            <div class="table-wrap table-light" style="margin-bottom: 2rem;">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70%;">Access Method</th>
+                            <th style="width: 30%;">Queries Available</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Direct access link (<a href="https://stoxo.stockgro.club"
+                                    target="_blank">stoxo.stockgro.club</a>)</td>
+                            <td><strong>2 queries</strong> (no account needed)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>With Login</strong> (queries capped per user plan):</p>
+            <div class="table-wrap table-light" style="margin-bottom: 2rem;">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Platform</th>
+                            <th style="width: 50%;">Auth Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Mobile App</strong></td>
+                            <td>Mobile number only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Web</strong></td>
+                            <td>Email OR mobile number</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>Query Credit System</strong> (per user plan):</p>
+            <div class="table-wrap table-light">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Tier</th>
+                            <th style="width: 25%;">Credits</th>
+                            <th style="width: 50%;">Implication</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Pre-login</strong></td>
+                            <td>2 queries (no account needed) (store cookies to validate returning user)</td>
+                            <td>Sampling layer - user experiences product quality before commitment</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Free, Expert & Advanced (logged in)</strong></td>
+                            <td>5 queries onetime</td>
+                            <td>This is a <em>trial</em>, not a freemium. The user has shots to be convinced.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stoxo PRO</strong></td>
+                            <td>20 queries/day</td>
+                            <td>The paid tier. Designed for regular use (Validators, Trackers who return weekly).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+
+            <h3 style="margin-top:4rem">Product Deconstruction</h3>
+            <img src="stoxo_deconstruction_img.png" alt="Stoxo Product Deconstruction" class="deconstruction-img">
+        </div>
+    </section>
+
+    <!-- 07: PM Questions -->
+    <section class="section section-warm">
+        <div class="container fade-in">
+            <span class="section-num">07</span>
+            <h2>PM Questions - The Structural Depth</h2>
+            <p class="lead">Behind every feature are strategic questions that define the product's direction. These are
+                the questions that should have driven the build.</p>
+
+            <div class="question-group">
+                <h3>🔵 Query Input Flow</h3>
+                <div class="question-list">
+                    <div class="question">Who are the users and can we segment them? (Validators, Comparators, Trackers,
+                        Learners; each needs different depth)</div>
+                    <div class="question">What language does our user think in? Do Tier 2/3 users type in Hinglish or
+                        English? What language patterns do we see in queries?</div>
+                    <div class="question">How do we help a first-time user who doesn't know what to ask?</div>
+                    <div class="question">Should prompt cards be static or change based on market events and user
+                        behavior?
+                    </div>
+                    <div class="question">How do we handle entity confusion: Tata Motors vs Tata Motors DVR vs
+                        pre-demerger
+                        Tata Motors?</div>
+                    <div class="question">Do we prioritize exchange accuracy or user intent when disambiguating stock
+                        names?
+                    </div>
+                    <div class="question">At what point do we gate with login: before value or after the "aha moment"?
+                    </div>
+                    <div class="question">How did we decide on 5 lifetime free queries? Is the aha moment at query 3, 5,
+                        or
+                        7?</div>
+                    <div class="question">Should users set context upfront ("I'm a beginner" or "I have ₹50K") to
+                        personalize responses?</div>
+                    <div class="question">How do we handle queries we can't answer well: crypto, international stocks,
+                        F&O,
+                        mutual funds?</div>
+                    <div class="question">Should we show trending queries as social proof without biasing independent
+                        research?</div>
+                    <div class="question">Is research history an asset (searchable, pinnable) or disposable (current
+                        chat-only)?</div>
+                    <div class="question">Should the UX adapt to context: rapid-fire during market hours vs. deep
+                        research
+                        at night?</div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <h3>🟢 AI Processing Flow</h3>
+                <div class="question-list">
+                    <div class="question">What data sources does the AI pull from, and how do we decide priority across
+                        fundamentals, technicals, and news?</div>
+                    <div class="question">How do we prevent hallucinated financial data? One wrong PE ratio destroys
+                        trust.
+                    </div>
+                    <div class="question">Does a simple query ("What is PE ratio?") cost the same as a complex one
+                        ("Compare
+                        TCS vs Infosys across 10 years")? Should we gate by complexity?</div>
+                    <div class="question">How does SEBI RA compliance work at the system level: approved sources,
+                        response
+                        templates, guardrails?</div>
+                    <div class="question">Should we cache popular stock responses to cut API costs? How often should the
+                        cache refresh?</div>
+                    <div class="question">What's the latency budget? The Thinking Path bridges perception, but is it the
+                        best solution?</div>
+                    <div class="question">Real-time vs. delayed data: if we show a 15-min-old TCS price during a
+                        volatile
+                        session, does trust break?</div>
+                    <div class="question">What happens when the AI is confidently wrong? Is there a feedback loop for
+                        correction?</div>
+                    <div class="question">Can we use StockGro's 35M user dataset in the AI's reasoning? Is this data
+                        accessible, clean, and real-time?</div>
+                    <div class="question">Should Stoxo Stock Score weights shift based on market conditions: bull vs.
+                        bear
+                        vs.
+                        sideways?</div>
+                    <div class="question">How many queries before we classify someone as a habitual researcher vs.
+                        one-time
+                        visitor?</div>
+                    <div class="question">What guardrails prevent crossing SEBI RA to IA boundary? Can it say "Buy" or
+                        only
+                        "bullish consensus"?</div>
+                    <div class="question">How do we handle earnings season load: 10,000 TCS queries on results day?
+                    </div>
+                    <div class="question">What's the fallback when the LLM provider has an outage?</div>
+                    <div class="question">Should we build a proprietary model or is prompt engineering on GS/Claude
+                        enough
+                        long-term?</div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <h3>🟡 Response & Action Flow</h3>
+                <div class="question-list">
+                    <div class="question">What should the user see FIRST: detailed analysis or the Stoxo Stock Score?
+                    </div>
+                    <div class="question">How do we word Buy/Sell/Hold verdicts to stay within SEBI RA bounds?</div>
+                    <div class="question">What actions should be available after a response, and which are P0?</div>
+                    <div class="question">Should we send users to a broker or keep them inside the ecosystem?</div>
+                    <div class="question">How do we make SEBI RA compliance visible, not just a footer line?</div>
+                    <div class="question">Should comparison queries have a completely different layout than single-stock
+                        queries?</div>
+                    <div class="question">How do we handle a user who got "Hold" but clearly wants to buy? Challenge
+                        bias or
+                        confirm it?</div>
+                    <div class="question">How do we show free-tier users what they're missing when queries run out?
+                    </div>
+                    <div class="question">Do users actually scroll to the Stoxo Stock Score at the bottom? Do they read
+                        DO/DON'T?
+                    </div>
+                    <div class="question">Should response depth differ for beginners vs. experts? One template or
+                        multiple?
+                    </div>
+                    <div class="question">How do we show source citations without cluttering the response?</div>
+                    <div class="question">Should responses include a confidence level: helpful or confusing?</div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <h3>🔴 Retention & Growth Flow</h3>
+                <div class="question-list">
+                    <div class="question">What triggers a return visit: market events, earnings, price alerts, or
+                        portfolio
+                        changes?</div>
+                    <div class="question">Is re-engagement event-driven (earnings season) or habitual (daily check)?
+                    </div>
+                    <div class="question">How do we help B2B partners (corporate, campus) measure Stoxo's impact on
+                        their
+                        users?</div>
+                    <div class="question">Is the re-engagement pattern different for web vs. mobile? Should we optimize
+                        separately?</div>
+                    <div class="question">Is Stoxo a product or a feature? The answer shapes every growth investment.
+                    </div>
+                    <div class="question">What makes users choose Stoxo over free AI in their trading app in 18 months?
+                    </div>
+                    <div class="question">Is there a path from SEBI RA to IA registration? Worth exploring as a 2-year
+                        bet?
+                    </div>
+                    <div class="question">What D7 return rate = "retentive"? 30%? 40%? How does this compare to other
+                        fintech
+                        AI tools?</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 08: Critical Gaps -->
+    <section id="gaps" class="section">
+        <div class="container fade-in">
+            <span class="section-num">08</span>
+            <h2>Where the Flow Breaks - Critical Gaps</h2>
+            <p class="lead">These are not just feature requests; they are structural weaknesses in the query-to-action
+                loop that cost user trust and revenue.</p>
+
+            <div class="table-wrap table-light" style="margin-bottom: 3rem;">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Gap</th>
+                            <th>Where It Breaks</th>
+                            <th>What It Costs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>No post-verdict actions</td>
+                            <td>After the analysis, the only option is "ask another question"</td>
+                            <td>Every session ends as a dead end; no save, no alert, no trade loop</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Trust is invisible</td>
+                            <td>SEBI RA registration is a footer line nobody reads</td>
+                            <td>Users can't distinguish Stoxo from ChatGPT; kills willingness to pay</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Wrong share unit</td>
+                            <td>"Share on WhatsApp" sends the entire conversation</td>
+                            <td>Chat logs don't go viral; verdict cards do</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Cliff, not a funnel</td>
+                            <td>5 lifetime free queries with no second chance</td>
+                            <td>One bad response taints the trial; user churns permanently</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Portfolio-blind</td>
+                            <td>Stoxo doesn't know what the user already holds</td>
+                            <td>Broker AIs give personalized context for free</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="gap-list">
+                <div class="gap-card">
+                    <span class="gap-num">01</span>
+                    <div>
+                        <h3>Gap 1: No Post-Verdict Actions</h3>
+                        <p><strong>The moment:</strong> User reads a bullish TCS analysis with an 8/10 Stoxo Stock
+                            Score.
+                            They're convinced. Now what?</p>
+                        <p><strong>What's missing:</strong> Save to watchlist, set a price alert, share a verdict card,
+                            simulate in virtual portfolio, or execute a trade. None of these exist. The only CTA is "ask
+                            another question."</p>
+                        <p><strong>What it costs:</strong> Every session trains the user to treat Stoxo as disposable.
+                            No save equals no return trigger. No share equals no viral loop. No trade link equals zero
+                            revenue attribution.</p>
+                        <p><strong>Why broker deep-links aren't the answer (yet):</strong> Zerodha and Groww are
+                            building their own AI - they have no reason to partner. The pragmatic first move is
+                            in-ecosystem: "Add to Virtual Portfolio" / "Simulate This Trade" / "Copy Trade Details."</p>
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <span class="gap-num">02</span>
+                    <div>
+                        <h3>Gap 2: Invisible Trust Differentiation</h3>
+                        <p><strong>The moment:</strong> User gets a TCS analysis and wonders, "Why should I trust this
+                            over ChatGPT?"</p>
+                        <p><strong>What's missing:</strong> The SEBI RA registration (INH000018300) is a footer line. No
+                            methodology followed. No backlinking to regulatory filings.</p>
+                        <p><strong>What it costs:</strong> Competitors like Fuzz cite regulatory filings as sources. If
+                            users can't <em>feel</em> the compliance difference, there's no reason to pay for Stoxo PRO
+                            over a competitor.</p>
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <span class="gap-num">03</span>
+                    <div>
+                        <h3>Gap 3: The Wrong Share Mechanic</h3>
+                        <p><strong>The moment:</strong> User taps "Share on WhatsApp" and Stoxo sends the entire
+                            conversation (10+ messages of back-and-forth).</p>
+
+                        <p><strong>Why this is the wrong unit:</strong></p>
+                        <div class="table-wrap table-light" style="margin: 1rem 0;">
+                            <table class="ux-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Whole Conversation</th>
+                                        <th>Single Verdict Card</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Recipient</strong></td>
+                                        <td>"Too long, didn't read"</td>
+                                        <td>"Stoxo says 8/10? Why?" → taps link</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Branding</strong></td>
+                                        <td>Looks like a support log</td>
+                                        <td>Visual, iconic, instantly recognizable</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Social trigger</strong></td>
+                                        <td>"I chatted with a bot"</td>
+                                        <td>"Look at this research I found"</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>CAC impact</strong></td>
+                                        <td>Near zero</td>
+                                        <td>Every share = free branded acquisition</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p><strong>The fix:</strong> Keep "Share Conversation" for personal records. Make <strong>"Share
+                                Answer" the primary CTA</strong> - a branded Stoxo Stock Score snapshot that pulls
+                            recipients into the app. Stock tips already spread via unverified WhatsApp forwards in
+                            India. Stoxo's SEBI-registered card replaces those with a verified alternative.</p>
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <span class="gap-num">04</span>
+                    <div>
+                        <h3>Gap 4: The 5-Lifetime-Query Cliff</h3>
+                        <p><strong>The moment:</strong> User finishes query #5. Screen goes blank. "Subscribe to
+                            continue."</p>
+                        <p><strong>What's broken:</strong> This is a cliff, not a funnel. Spotify lets free users listen
+                            forever (with ads). Notion gives unlimited pages. Stoxo gives 5 chances - ever. If even one
+                            of those 5 returned a weak response (wrong entity, generic answer, a stock they didn't care
+                            about), the entire trial is tainted.</p>
+                        <p><strong>What it costs:</strong> No second chance at a first impression. And with the user
+                            base who primary purpose is to learn things, users might exhaust all 5 queries without ever
+                            seeing the one moment that justifies paying.</p>
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <span class="gap-num">05</span>
+                    <div>
+                        <h3>Gap 5: The Portfolio Blind Spot</h3>
+                        <p><strong>The moment:</strong> User asks "Should I buy ITC?" Stoxo returns a generic
+                            fundamental/technical analysis.</p>
+                        <p><strong>What's missing:</strong> Stoxo doesn't know what the user already holds. Broker AIs
+                            (Zerodha, Groww) give personalized context for free.</p>
+                        <p><strong>The opportunity:</strong> India's Account Aggregator frame enables consent-based data
+                            sharing. Stoxo could add risk context without crossing into SEBI IA territory as long as it
+                            frames this as risk information, not personalized advice.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 09: Proposed Improvements -->
+    <section id="improvements" class="section section-warm">
+        <div class="container fade-in">
+            <span class="section-num">09</span>
+            <h2>Proposed Improvements - Prioritized</h2>
+            <div class="table-wrap table-light">
+                <table class="ux-table">
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Improvement</th>
+                            <th>Solves Gap</th>
+                            <th>Effort</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>P0</strong></td>
+                            <td><strong>WhatsApp Verdict Card</strong> - branded shareable card showing Stoxo Stock
+                                Score +
+                                stock name (NOT the verdict), links back to app</td>
+                            <td>Gap 4</td>
+                            <td>Medium (design + deep link)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P1</strong></td>
+                            <td><strong>Smart Alerts</strong> - "Notify me when TCS hits ₹3,800" or "when it release the
+                                quarterly result"</td>
+                            <td>Gap 1</td>
+                            <td>High (notification infra)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P1</strong></td>
+                            <td><strong>In-Ecosystem Actions</strong> - "Add to Virtual Portfolio" / "Simulate Trade" /
+                                "Copy Trade Details"</td>
+                            <td>Gap 1</td>
+                            <td>Medium (UI + portfolio integration)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P1</strong></td>
+                            <td><strong>Hinglish Support</strong> - parse and respond in professional Hinglish for Tier
+                                2/3 users</td>
+                            <td>Reach</td>
+                            <td>Medium (prompt engineering)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P1</strong></td>
+                            <td><strong>Voice Input</strong> - speak queries instead of typing (like Perplexity mobile)
+                            </td>
+                            <td>Reach</td>
+                            <td>Medium (speech-to-text)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P2</strong></td>
+                            <td><strong>Account Aggregator Integration</strong> - consent-based portfolio context,
+                                framed as risk info (not advice)</td>
+                            <td>Gap 6</td>
+                            <td>High (AA + compliance)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P2</strong></td>
+                            <td><strong>Visible Trust Signal</strong> - SEBI RA badge + source citations</td>
+                            <td>Gap 2</td>
+                            <td>High (Methodology display with source backlinking with pagination)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10: Deep Dives -->
+    <section class="section">
+        <div class="container fade-in">
+            <span class="section-num">10</span>
+            <h2>Deep Dive: Top 2 Improvements</h2>
+
+            <div class="deep-dive">
+                <h3>🟢 Improvement 1: WhatsApp Verdict Card (P0)</h3>
+                <p><strong>The problem:</strong> Zero organic distribution. The current "Share" sends the entire
+                    conversation; nobody reads a chat log forwarded on WhatsApp.</p>
+                <p><strong>The fix:</strong> "Share as Card" generates a branded image showing the verified technical
+                    and fundamental scores.</p>
+                <p style="margin-top:1.5rem"><strong>Key design choice:</strong> The card shows the score but NOT the
+                    Buy/Sell verdict. This is critical for two reasons:</p>
+                <ul style="font-size:.88rem;color:#555;line-height:2;padding-left:1.2rem; list-style-type: disc;">
+                    <li><strong>SEBI compliant:</strong> No "advice" travels outside the platform.</li>
+                    <li><strong>Creates curiosity:</strong> "7.2/10... but is it a Buy or Hold?" → user taps link.</li>
+                    <li><strong>Every share = free branded ad</strong> with a built-in conversion trigger.</li>
+                </ul>
+                <p style="margin-top:1rem"><strong>Track:</strong> Shares per user per week (target: 0.5+),
+                    share-to-signup conversion, and K-factor.</p>
+            </div>
+
+            <div class="deep-dive">
+                <h3>🔔 Improvement 2: Smart Alerts - Pull to Push (P1)</h3>
+                <p><strong>The problem:</strong> Stoxo is pull-only. Users must remember to open the app. There's no
+                    reason to return unless they actively think about it.</p>
+                <p><strong>The fix:</strong> After any analysis, offer alert CTAs that pull the user back in based on
+                    real-time triggers:</p>
+                <ul style="font-size:.88rem;color:#555;line-height:2;padding-left:1.2rem; list-style-type: disc;">
+                    <li>"Alert me when TCS hits Rs.3,800" (price trigger)</li>
+                    <li>"Notify me if Stoxo Stock Score drops below 7" (score trigger)</li>
+                    <li>"Update me after Q4 results" (event trigger)</li>
+                </ul>
+                <p style="margin-top:1rem"><strong>Why this is the retention unlock:</strong> A user with pending alerts
+                    will open Stoxo when notified; that's a guaranteed return visit driven by the product. This is how
+                    Stoxo becomes a habit instead of a one-time tool.</p>
+                <p style="margin-top:1rem"><strong>Track:</strong> Alerts set per user, alert-triggered return visits,
+                    and D7 return rate.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11: Metrics -->
+    <section id="metrics" class="section section-dark">
+        <div class="container fade-in">
+            <span class="section-num">11</span>
+            <h2>Success Metrics - What I'd Track</h2>
+            <blockquote class="big-quote"><strong>North Star Metric:</strong> Query-to-Return Rate (D7) - % of users who
+                query Stoxo and return within 7 days. (Focuses on building the research habit, not just one-off usage).
+                <br><br>
+                <span style="font-size: 1rem; font-weight: 400; opacity: 0.8;">Supporting metric:
+                    <strong>Research-to-action rate</strong> - % of analyses that lead to a downstream action (save,
+                    alert, share, or trade).</span>
+            </blockquote>
+
+            <div class="two-col">
+                <div>
+                    <h3 style="margin-bottom:1rem">📊 User Metrics</h3>
+                    <div class="table-wrap table-dark">
+                        <table class="ux-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>What It Tells Us</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Query resolution rate</td>
+                                    <td>% where user gets answer without rephrasing</td>
+                                </tr>
+                                <tr>
+                                    <td>Time to first actionable insight</td>
+                                    <td>Speed to value (Latency + UX friction)</td>
+                                </tr>
+                                <tr>
+                                    <td>Session Success Rate</td>
+                                    <td>% of sessions ending in a positive signal (Thumbs up, Share, Save, or Alert)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Share rate</td>
+                                    <td>Organic distribution potential</td>
+                                </tr>
+                                <tr>
+                                    <td>D7 return rate</td>
+                                    <td>Do they come back next week?</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin-bottom:1rem">💰 Business Metrics</h3>
+                    <div class="table-wrap table-dark">
+                        <table class="ux-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>What It Tells Us</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Paywall Hit-to-Conversion Rate</td>
+                                    <td>Efficiency of the 5-query limit. Do users pay when blocked, or do they churn?
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Revenue per Stoxo query</td>
+                                    <td>Monetization efficiency</td>
+                                </tr>
+                                <tr>
+                                    <td>Retention Uplift</td>
+                                    <td>Do Stoxo users have higher LTV than non-Stoxo users?</td>
+                                </tr>
+                                <tr>
+                                    <td>Revenue per Stoxo User</td>
+                                    <td>Is the AI feature actually driving incremental ARPU?</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p class="footer-text">This teardown focuses on the query-to-decision path, because it is where Stoxo's
+                entire value proposition either works or fails. Every recommendation is designed to be shipped within
+                existing constraints and measured against specific, observable metrics.</p>
+            <p class="footer-sig">Created by Sudhanshu (9764818960)</p>
+        </div>
+    </footer>
+
+    <script>
+        // Nav scroll effect
+        const nav = document.getElementById('topnav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 40);
+        });
+
+        // Fade-in on scroll
+        const fadeEls = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.08,
+            rootMargin: '0px 0px -40px 0px'
+        });
+
+        fadeEls.forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>
