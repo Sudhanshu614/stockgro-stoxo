@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Angel Pod — Research to Product</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,0,700;9..144,1,400;9..144,1,500;9..144,1,600&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAFAF8;--bg2:#F4F0EB;--bg3:#EDE8DF;
+  --surf:#FFFFFF;
+  --bd:#E2DAD0;--bd2:#D0C8BC;
+  --t1:#18150F;--t2:#6B6256;--t3:#B0A89E;--t4:#D0C8BC;
+  --or:#D94F00;--orBg:#FDF0EA;--orBd:#F5C4A8;--orDim:rgba(217,79,0,.09);
+  --gr:#1A6B3A;--grBg:#EEF8F2;
+  --serif:'Fraunces',serif;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;display:flex;flex-direction:column;transition:opacity 260ms ease}
+.slide.active{opacity:1;pointer-events:all}
+.si{flex:1;overflow-y:auto;overflow-x:hidden;padding:48px 72px 80px;scrollbar-width:thin;scrollbar-color:var(--bd) transparent}
+.si::-webkit-scrollbar{width:3px}
+.si::-webkit-scrollbar-thumb{background:var(--bd);border-radius:100px}
+
+/* CHROME */
+.chrome{position:fixed;bottom:0;left:0;right:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 72px;z-index:200;background:linear-gradient(transparent,var(--bg) 50%);pointer-events:none}
+.cb{display:flex;align-items:center;gap:7px}
+.clogo{width:18px;height:18px;background:var(--or);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cname{font-family:var(--serif);font-size:11px;font-weight:600;color:var(--t4);letter-spacing:-.02em}
+.cname em{font-style:italic;color:var(--or)}
+.cn{display:flex;align-items:center;gap:12px;pointer-events:all}
+.nb{width:32px;height:32px;border-radius:50%;border:1px solid var(--bd2);background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 130ms;color:var(--t2);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.nb:hover{border-color:var(--or);color:var(--or)}
+.sc{font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:.1em}
+.prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--bg3);z-index:300}
+.pf{height:100%;background:var(--or);transition:width 260ms ease}
+.slbl{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--or);opacity:.75;margin-bottom:24px;display:block}
+
+/* ── COVER ── */
+.cover{justify-content:center;padding-bottom:60px}
+.ceyebrow{font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.24em;color:var(--or);margin-bottom:20px;opacity:.8}
+.ch1{font-family:var(--serif);font-size:68px;font-weight:600;line-height:1.04;letter-spacing:-.05em;color:var(--t1);margin-bottom:20px;max-width:800px}
+.ch1 em{font-style:italic;color:var(--or)}
+.csub{font-size:14px;color:var(--t2);line-height:1.7;max-width:500px;margin-bottom:44px}
+.csub strong{color:var(--t1);font-weight:500}
+.cstats{display:flex;gap:44px}
+.stn{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--or);line-height:1;letter-spacing:-.03em}
+.stl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);margin-top:4px}
+
+/* ── THREE STREAMS ── */
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:2px}
+.sc2{border:1px solid var(--bd);border-radius:12px;padding:22px;background:var(--surf);display:flex;flex-direction:column}
+.scnum{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--or);margin-bottom:8px}
+.sctitle{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--t1);line-height:1.2;letter-spacing:-.025em;margin-bottom:14px}
+.sctitle em{font-style:italic}
+/* conclusion FIRST — big and orange */
+.sctakeaway{font-family:var(--serif);font-size:13px;font-weight:500;color:var(--t1);line-height:1.55;font-style:italic;padding:12px 14px;background:var(--orDim);border:1px solid var(--orBd);border-radius:7px;margin-bottom:14px}
+.ptag{font-family:var(--mono);font-size:8.5px;color:var(--t3);line-height:1.9;display:block}
+.ptag strong{color:var(--t2);font-weight:500}
+
+/* ── PAPER DEEP DIVE ── */
+.pdp{display:grid;grid-template-columns:240px 1fr;gap:36px;align-items:start}
+.pdp-lhs-title{font-family:var(--serif);font-size:34px;font-weight:600;color:var(--t1);line-height:1.1;letter-spacing:-.035em;margin-bottom:10px}
+.pdp-lhs-title em{font-style:italic;color:var(--or)}
+.pdp-lhs-sub{font-size:11.5px;color:var(--t2);line-height:1.65;margin-bottom:16px}
+.pdp-box{background:var(--orBg);border:1px solid var(--orBd);border-radius:7px;padding:12px 14px;font-size:11px;color:var(--t1);line-height:1.6}
+.pdp-box strong{color:var(--or);font-weight:600}
+.prhs{display:flex;flex-direction:column;gap:9px}
+.pc{border:1px solid var(--bd);border-radius:9px;padding:14px 16px;background:var(--surf)}
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px}
+.pc-name{font-family:var(--serif);font-size:13px;font-weight:500;color:var(--t1);line-height:1.25;letter-spacing:-.015em}
+.pbdg{font-family:var(--mono);font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.pb1{background:var(--orBg);color:var(--or);border:1px solid var(--orBd)}
+.pb2{background:#FFF8EC;color:#92400E;border:1px solid #F0D88A}
+.pb3{background:var(--bg2);color:var(--t3);border:1px solid var(--bd)}
+.pc-meta{font-family:var(--mono);font-size:7.5px;color:var(--t4);margin-bottom:6px;letter-spacing:.03em}
+/* THE ONE THING — big and bold */
+.pc-one{font-size:12.5px;color:var(--t1);line-height:1.5;font-weight:500}
+.pc-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gr)}
+.pc-num-or{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--or)}
+
+/* ── TAXONOMY ── */
+.tg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:2px}
+.tc{border:1px solid var(--bd);border-radius:10px;padding:16px 18px;background:var(--surf)}
+.tt{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--or);margin-bottom:10px}
+/* tier visual weight */
+.tc.t1 .te strong{color:var(--t1)}
+.tc.t2 .te strong{color:var(--t2)}
+.tc.t3 .te strong{color:var(--t3)}
+.tc.t1 .te{color:var(--t2);font-size:10.5px;line-height:1.9}
+.tc.t2 .te{color:var(--t3);font-size:10px;line-height:1.85}
+.tc.t3 .te{color:var(--t4);font-size:9.5px;line-height:1.8}
+.te strong{font-weight:600}
+
+/* ── PAPER LINKS ── */
+a.plink{color:inherit;text-decoration:none;border-bottom:1px solid var(--bd);transition:border-color 150ms,color 150ms}
+a.plink:hover{color:var(--or);border-bottom-color:var(--or)}
+.pc-name a,.ptag a,.te a,.ft a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--bd2);transition:all 150ms}
+.pc-name a:hover,.ptag a:hover,.te a:hover,.ft a:hover{color:var(--or);border-bottom-color:var(--or)}
+.tdc a{color:var(--t4);text-decoration:none;border-bottom:1px dotted var(--t4);font-family:var(--mono);font-size:8px;transition:all 150ms}
+.tdc a:hover{color:var(--or);border-bottom-color:var(--or)}
+
+/* ── DECISIONS ── */
+.dw{display:flex;flex-direction:column;gap:12px}
+.dr{border:1px solid var(--bd);border-radius:10px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surf)}
+.dc{padding:16px 18px;border-right:1px solid var(--bd)}
+.dc:last-child{border-right:none}
+/* MIDDLE COL = orange dominant */
+.dc.mid{background:var(--orDim);border-right:1px solid var(--orBd)}
+.dc-lbl{font-family:var(--mono);font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--t4);margin-bottom:7px}
+.dc.mid .dc-lbl{color:var(--or);opacity:.8}
+.dc-t{font-size:11px;color:var(--t2);line-height:1.55}
+.dc-t strong{color:var(--t1);font-weight:500}
+.dc.mid .dc-t{font-size:11.5px;color:var(--t1)}
+.dc.mid .dc-t strong{color:var(--or)}
+.pill{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--or);background:var(--orBg);border:1px solid var(--orBd);padding:1px 7px;border-radius:100px;display:inline-block}
+
+/* ── PROTOTYPE ── */
+.pws{display:flex;align-items:center;justify-content:center;gap:48px;flex:1;padding:0 0 60px}
+.pphone{width:375px;height:780px;border-radius:44px;overflow:hidden;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.07)}
+.pphone iframe{width:100%;height:100%;border:none;display:block}
+.pgd{max-width:250px}
+.pglbl{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--or);margin-bottom:14px}
+.psteps{display:flex;flex-direction:column;gap:10px}
+.ps{display:flex;gap:9px}
+.psn{font-family:var(--mono);font-size:8.5px;font-weight:700;color:var(--or);flex-shrink:0;padding-top:2px}
+.pst{font-size:11px;color:var(--t2);line-height:1.5}
+.pst strong{color:var(--t1);font-weight:500}
+
+/* ── GAPS ── */
+.gw{display:flex;flex-direction:column;gap:12px}
+.gc{display:grid;grid-template-columns:180px 1fr;border:1px solid var(--bd);border-radius:10px;overflow:hidden;background:var(--surf)}
+.gl{padding:18px 16px;background:var(--bg2);display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--bd)}
+.gn{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--or);margin-bottom:5px}
+.glt{font-family:var(--serif);font-size:14.5px;font-weight:600;color:var(--t1);line-height:1.2;letter-spacing:-.02em}
+.glt em{font-style:italic;color:var(--or)}
+.gr2{padding:16px 20px}
+/* bold statement only — no prose */
+.gf{font-size:12px;color:var(--t1);font-weight:500;line-height:1.5;margin-bottom:7px}
+.go{font-family:var(--mono);font-size:8.5px;color:var(--t3);line-height:1.5}
+.go span{color:var(--or)}
+
+/* ── FINAL ── */
+.ft{width:100%;border-collapse:collapse;margin-bottom:36px}
+.ft th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--t4);text-align:left;padding:0 0 10px;border-bottom:1px solid var(--bd)}
+.ft th+th{padding-left:18px}
+.ft td{padding:9px 0;border-bottom:1px solid rgba(24,21,15,.04);vertical-align:top;font-size:11.5px}
+.ft td+td{padding-left:18px}
+.tdr{color:var(--t2);line-height:1.45}
+.tdc{font-family:var(--mono);font-size:8px;color:var(--t4)}
+.tdb{color:var(--t1);font-weight:500;line-height:1.45}
+.fthesis{font-family:var(--serif);font-size:20px;font-weight:500;font-style:italic;color:var(--t2);line-height:1.55;letter-spacing:-.02em}
+.fthesis em{font-style:normal;font-weight:600;color:var(--or)}
+
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .a1{animation:up 300ms ease 40ms both}
+.slide.active .a2{animation:up 300ms ease 110ms both}
+.slide.active .a3{animation:up 300ms ease 180ms both}
+.slide.active .a4{animation:up 300ms ease 250ms both}
+.slide.active .a5{animation:up 300ms ease 320ms both}
+</style>
+</head>
+<body>
+<div class="prog"><div class="pf" id="pf"></div></div>
+<div class="deck">
+
+<!-- ═══════════════════════════
+  01  COVER
+═══════════════════════════ -->
+<div class="slide active">
+<div class="si cover">
+  <div class="ceyebrow a1">Internal Design Rationale · Angel One</div>
+  <h1 class="ch1 a2">From research<br/>to <em>Angel Pod.</em></h1>
+  <p class="csub a3">The brief: build the basket experience.<br/>Before any wireframe — <strong>25+ peer-reviewed papers</strong> across CHI, UIST, ACM, and financial economics. Every design decision has a citation.</p>
+  <div class="cstats a4">
+    <div><div class="stn">25+</div><div class="stl">Papers surveyed</div></div>
+    <div><div class="stn">3</div><div class="stl">Research streams</div></div>
+    <div><div class="stn">1999–2025</div><div class="stl">Literature span</div></div>
+    <div><div class="stn">CHI · UIST · ACM</div><div class="stl">Top-tier venues</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  02  THREE STREAMS — conclusion first
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">The Research Landscape</span>
+  <div class="sg">
+    <div class="sc2 a2">
+      <div class="scnum">Stream 01</div>
+      <div class="sctitle">Human–AI<br/><em>Interaction Design</em></div>
+      <div class="sctakeaway">"High-stakes tasks need conversation + persistent interactive artifact. Chat alone is documented to fail."</div>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/302979.303030" target="_blank"><strong>Horvitz</strong></a> · CHI 1999</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3290605.3300233" target="_blank"><strong>Amershi et al.</strong></a> · CHI 2019</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3586183.3606737" target="_blank"><strong>Graphologue</strong></a> · UIST 2023</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3613904.3642639" target="_blank"><strong>DynaVis</strong></a> · CHI 2024 Best Paper</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3613904.3642462" target="_blank"><strong>DirectGPT</strong></a> · CHI 2024</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3654777.3676462" target="_blank"><strong>WaitGPT</strong></a> · UIST 2024</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706599.3719726" target="_blank"><strong>GenerativeGUI</strong></a> · CHI EA 2025</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706598.3714195" target="_blank"><strong>Jelly</strong></a> · CHI 2025</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706598.3713906" target="_blank"><strong>Feedforward in GenAI</strong></a> · CHI 2025</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706598.3714082" target="_blank"><strong>Conversation Progress Guide</strong></a> · CHI 2025</span>
+      <span class="ptag"><a href="https://www.microsoft.com/en-us/research/blog/ux-for-ai-agents-a-framework-for-thoughtful-design/" target="_blank"><strong>Microsoft Agentic UX</strong></a> · 2025</span>
+    </div>
+    <div class="sc2 a3">
+      <div class="scnum">Stream 02</div>
+      <div class="sctitle">Algorithm Trust &amp;<br/><em>Behavioral Finance</em></div>
+      <div class="sctakeaway">"Trust in financial AI is a function of co-authorship — not performance. The design implication is specific."</div>
+      <span class="ptag"><a href="https://doi.org/10.1016/j.obhdp.2018.12.005" target="_blank"><strong>Logg, Minson &amp; Moore</strong></a> · OBHDP 2019</span>
+      <span class="ptag"><a href="https://doi.org/10.3390/jrfm15060239" target="_blank"><strong>Filiz et al.</strong></a> · JRFM 2022</span>
+      <span class="ptag"><strong>Ashtiani et al.</strong> · Financial behavior</span>
+      <span class="ptag"><a href="https://doi.org/10.1016/j.jbankfin.2023.106879" target="_blank"><strong>Brunner et al.</strong></a> · JBF 2023</span>
+      <span class="ptag"><a href="https://doi.org/10.1108/JIER-07-2022-0124" target="_blank"><strong>Das &amp; Banerjee</strong></a> · JIER 2023</span>
+      <span class="ptag"><a href="https://doi.org/10.3389/frbhe.2024.1489159" target="_blank"><strong>Frontiers Behavioral Economics</strong></a> · 2024</span>
+      <span class="ptag"><a href="https://rpc.cfainstitute.org/en/research/reports/2024/artificial-intelligence-in-investment-management" target="_blank"><strong>CFA Institute AI Survey</strong></a> · 2025</span>
+      <span class="ptag"><a href="https://doi.org/10.1016/j.intfin.2025.102132" target="_blank"><strong>ScienceDirect AI Trust</strong></a> · 2025</span>
+    </div>
+    <div class="sc2 a4">
+      <div class="scnum">Stream 03</div>
+      <div class="sctitle">Generative UI as a<br/><em>Product Category</em></div>
+      <div class="sctakeaway">"Google deployed it in production Nov 2025. Zero implementations in Indian financial services."</div>
+      <span class="ptag"><a href="https://blog.research.google/2025/11/generative-ui-rich-custom-visual.html" target="_blank"><strong>GenUI / Leviathan et al.</strong></a> · Google 2025</span>
+      <span class="ptag"><a href="https://arxiv.org/abs/2508.19227" target="_blank"><strong>GenUI Benchmark</strong></a> · arXiv 2508.19227</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3715336.3735667" target="_blank"><strong>Working Definition of GenUI</strong></a> · DIS 2025</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706598.3714195" target="_blank"><strong>Jelly</strong></a> · CHI 2025</span>
+      <span class="ptag"><a href="https://dl.acm.org/doi/10.1145/3706599.3719726" target="_blank"><strong>GenerativeGUI</strong></a> · CHI EA 2025</span>
+      <span class="ptag"><a href="https://vercel.com/blog/ai-sdk-3-generative-ui" target="_blank"><strong>Vercel AI SDK 3.0</strong></a> · 2024</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  03  STREAM 1 — HCI
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Stream 01 · Human–AI Interaction Design · 26 years, one answer</span>
+  <div class="pdp">
+    <div class="a2">
+      <div class="pdp-lhs-title">26 years.<br/><em>One answer.</em></div>
+      <div class="pdp-lhs-sub">From Horvitz 1999 through today's agentic AI — one convergent architecture for high-stakes tasks.</div>
+      <div class="pdp-box"><strong>Convergent finding:</strong> conversation + persistent interactive artifact with direct manipulation. Not a preference — the validated architecture.</div>
+    </div>
+    <div class="prhs a3">
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://dl.acm.org/doi/10.1145/3586183.3606737" target="_blank">Graphologue — LLM Responses with Interactive Diagrams</a></div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">Jiang et al. · ACM UIST 2023</div>
+        <div class="pc-one">Text-only LLM interfaces have three failure modes: verbosity, linearity, inflexibility.<br/><strong>Visual must stream simultaneously with text — not after.</strong></div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://dl.acm.org/doi/10.1145/3613904.3642639" target="_blank">DynaVis — Dynamically Synthesized UI Widgets</a></div><div class="pbdg pb2">CHI Best Paper</div></div>
+        <div class="pc-meta">Vaithilingam et al. · CHI 2024 · Microsoft Research + Harvard</div>
+        <div class="pc-one"><strong>Persistent widgets → higher editing confidence.</strong> NLI-only users started copying prompts as backup — quantifying the cognitive cost of "describe from scratch."</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://dl.acm.org/doi/10.1145/3613904.3642462" target="_blank">DirectGPT — Direct Manipulation Interface for LLMs</a></div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">Masson et al. · CHI 2024 · Waterloo + Inria</div>
+        <div class="pc-one">Direct manipulation vs. baseline ChatGPT: <span class="pc-num">50% faster</span> · <span class="pc-num">50% fewer prompts</span> · <span class="pc-num">72% shorter</span> per interaction.</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://dl.acm.org/doi/10.1145/3654777.3676462" target="_blank">WaitGPT</a> · <a href="https://dl.acm.org/doi/10.1145/3706599.3719726" target="_blank">GenerativeGUI</a> · <a href="https://dl.acm.org/doi/10.1145/3706598.3714195" target="_blank">Jelly</a> · <a href="https://dl.acm.org/doi/10.1145/3706598.3713906" target="_blank">Feedforward</a></div><div class="pbdg pb3">CHI/UIST 2024–25</div></div>
+        <div class="pc-meta">Multiple authors · UIST 2024 · CHI 2025</div>
+        <div class="pc-one">GenerativeGUI: generated GUI during clarification <strong>reduces mental demand and task time.</strong> Jelly: conversation → persistent malleable artifact. Closest architectural cousin to Angel Pod.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  04  STREAM 2 — BEHAVIORAL
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Stream 02 · Algorithm Trust &amp; Behavioral Finance</span>
+  <div class="pdp">
+    <div class="a2">
+      <div class="pdp-lhs-title">The trust<br/><em>mechanism.</em></div>
+      <div class="pdp-lhs-sub">Behavioral economics arrived at the same conclusion independently. Co-authorship changes both initial trust and downstream behavior.</div>
+      <div class="pdp-box"><strong>The implication:</strong> every real choice with visible consequences increases the probability of investing — and staying invested.</div>
+    </div>
+    <div class="prhs a3">
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://doi.org/10.1016/j.obhdp.2018.12.005" target="_blank">Algorithm Appreciation — Logg, Minson &amp; Moore</a></div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">OBHDP 2019 · Harvard + Wharton</div>
+        <div class="pc-one"><strong>Parameter control → significantly higher algorithm appreciation.</strong> Control creates co-authorship. Co-authorship converts "done to me" into "I helped make."</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://doi.org/10.3390/jrfm15060239" target="_blank">Algorithm Aversion in Delegated Financial Investing</a></div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">Filiz et al. · JRFM 2022</div>
+        <div class="pc-one">Investors trusted a demonstrably superior algorithm only <span class="pc-num-or">40%</span> of the time. <strong>Performance alone cannot overcome the trust ceiling.</strong></div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name">Co-authorship and Panic Selling — Ashtiani et al.</div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">Financial behavior literature</div>
+        <div class="pc-one">Co-built portfolios: <span class="pc-num">3× less panic selling</span> during downturns — <strong>10% sold vs. 31%</strong> in passive-recommendation condition.</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://rpc.cfainstitute.org/en/research/reports/2024/artificial-intelligence-in-investment-management" target="_blank">CFA Institute Global AI Survey 2025</a></div><div class="pbdg pb3">CFA 2025</div></div>
+        <div class="pc-meta">CFA Institute · Global financial services</div>
+        <div class="pc-one">Explainability is the <strong>#2 barrier to AI adoption in financial services</strong> — after regulatory uncertainty.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  05  STREAM 3 — GENUI
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Stream 03 · Generative UI as a Product Category</span>
+  <div class="pdp">
+    <div class="a2">
+      <div class="pdp-lhs-title">A category<br/><em>12 months old.</em></div>
+      <div class="pdp-lhs-sub">Google shipped it in production Nov 2025. Academic validation built in parallel. The category is real — and absent from Indian fintech.</div>
+      <div class="pdp-box"><strong>Market position:</strong> Google validated the category. Zero implementations in Indian financial services.</div>
+    </div>
+    <div class="prhs a3">
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://blog.research.google/2025/11/generative-ui-rich-custom-visual.html" target="_blank">Generative UI — Production in Gemini + Google Search AI Mode</a></div><div class="pbdg pb1">Production</div></div>
+        <div class="pc-meta">Leviathan et al. · Google Research Blog · November 2025</div>
+        <div class="pc-one">GenUI approaches human-expert-quality interfaces. <strong>Raw LLM markdown rated significantly worse</strong> across all conditions. Production proof — not lab evidence.</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://arxiv.org/abs/2508.19227" target="_blank">Generative Interfaces for LLMs — UIX Benchmark</a></div><div class="pbdg pb1">Tier 1</div></div>
+        <div class="pc-meta">arXiv 2508.19227 · 2025 · Built on Claude 3.7</div>
+        <div class="pc-one">GenUI <strong>strongly preferred</strong> for <em>"structured and information-dense tasks."</em> Portfolio construction is the canonical example.</div>
+      </div>
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name"><a href="https://dl.acm.org/doi/10.1145/3706599.3719726" target="_blank">GenerativeGUI</a> · <a href="https://dl.acm.org/doi/10.1145/3706598.3714195" target="_blank">Jelly</a> · <a href="https://dl.acm.org/doi/10.1145/3715336.3735667" target="_blank">Working Definition of GenUI</a></div><div class="pbdg pb3">CHI / DIS 2025</div></div>
+        <div class="pc-meta">Multiple authors · CHI EA 2025 · DIS 2025</div>
+        <div class="pc-one">Jelly: conversation → persistent malleable artifact. <strong>Architecturally identical to Angel Pod's basket generation flow.</strong> Closest paper in 2025 literature.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  06  FULL TAXONOMY
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Full Paper Taxonomy — 25+ papers, three tiers</span>
+  <div class="tg">
+    <div class="tc t1 a2">
+      <div class="tt">Tier 1 — Foundational</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3586183.3606737" target="_blank"><strong>Graphologue</strong></a> · UIST 2023<br/>Text + visual must coexist</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3613904.3642639" target="_blank"><strong>DynaVis</strong></a> · CHI 2024 Best Paper<br/>Persistent widgets = editing confidence</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3613904.3642462" target="_blank"><strong>DirectGPT</strong></a> · CHI 2024<br/>Direct manipulation 50% faster</div>
+      <div class="te"><a href="https://blog.research.google/2025/11/generative-ui-rich-custom-visual.html" target="_blank"><strong>GenUI / Leviathan</strong></a> · Google 2025<br/>Production proof of category</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3706599.3719726" target="_blank"><strong>GenerativeGUI</strong></a> · CHI EA 2025<br/>Generated GUI reduces mental demand</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/302979.303030" target="_blank"><strong>Horvitz</strong></a> · CHI 1999<br/>Mixed-initiative interaction principles</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3290605.3300233" target="_blank"><strong>Amershi et al.</strong></a> · CHI 2019<br/>18 guidelines for human-AI design</div>
+    </div>
+    <div class="tc t2 a3">
+      <div class="tt">Tier 2 — Design Decisions</div>
+      <div class="te"><a href="https://doi.org/10.1016/j.obhdp.2018.12.005" target="_blank"><strong>Logg, Minson &amp; Moore</strong></a> · OBHDP 2019<br/>Parameter control → algorithm appreciation</div>
+      <div class="te"><a href="https://doi.org/10.3390/jrfm15060239" target="_blank"><strong>Filiz et al.</strong></a> · JRFM 2022<br/>Algorithm aversion: 40% trust rate</div>
+      <div class="te"><strong>Ashtiani et al.</strong><br/>Co-authorship → 3× less panic selling</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3654777.3676462" target="_blank"><strong>WaitGPT</strong></a> · UIST 2024<br/>Monitoring generation builds confidence</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3706598.3714195" target="_blank"><strong>Jelly</strong></a> · CHI 2025<br/>Conversation → persistent artifact</div>
+      <div class="te"><a href="https://doi.org/10.1016/j.jbankfin.2023.106879" target="_blank"><strong>Brunner et al.</strong></a> · JBF 2023<br/>IKEA effect in portfolio decisions</div>
+      <div class="te"><a href="https://rpc.cfainstitute.org/en/research/reports/2024/artificial-intelligence-in-investment-management" target="_blank"><strong>CFA Institute</strong></a> · 2025<br/>Explainability = #2 adoption barrier</div>
+      <div class="te"><a href="https://www.microsoft.com/en-us/research/blog/ux-for-ai-agents-a-framework-for-thoughtful-design/" target="_blank"><strong>Microsoft Agentic UX</strong></a> · 2025<br/>Production agentic design principles</div>
+    </div>
+    <div class="tc t3 a4">
+      <div class="tt">Tier 3 — Supporting</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3706598.3713906" target="_blank"><strong>Feedforward in GenAI</strong></a> · CHI 2025<br/>Anticipation reduces cognitive load</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3706598.3714082" target="_blank"><strong>Conv. Progress Guide</strong></a> · CHI 2025<br/>Visible progress → task completion</div>
+      <div class="te"><a href="https://dl.acm.org/doi/10.1145/3715336.3735667" target="_blank"><strong>Working Definition GenUI</strong></a> · DIS 2025<br/>5 themes of co-creative GenUI</div>
+      <div class="te"><a href="https://doi.org/10.1108/JIER-07-2022-0124" target="_blank"><strong>Das &amp; Banerjee</strong></a> · JIER 2023<br/>Indian investors: 22% less overtrading</div>
+      <div class="te"><a href="https://doi.org/10.3389/frbhe.2024.1489159" target="_blank"><strong>Frontiers Behavioral Econ.</strong></a> · 2024<br/>Robo-advisor adoption barriers</div>
+      <div class="te"><a href="https://doi.org/10.1016/j.intfin.2025.102132" target="_blank"><strong>ScienceDirect AI Trust</strong></a> · 2025<br/>Transparency &gt; customization in finance</div>
+      <div class="te"><a href="https://vercel.com/blog/ai-sdk-3-generative-ui" target="_blank"><strong>Vercel AI SDK 3.0</strong></a> · 2024<br/>Engineering substrate for GenUI</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  07  DECISIONS A (rows 1+2)
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Research → Design · Decisions 1 &amp; 2</span>
+  <div class="dw a2">
+    <div class="dr">
+      <div class="dc">
+        <div class="dc-lbl">The alternative</div>
+        <div class="dc-t">Return a text recommendation. Every existing product — Fuzz, SEVA, every robo-advisor.</div>
+      </div>
+      <div class="dc mid">
+        <div class="dc-lbl">Research demanded</div>
+        <div class="dc-t"><strong>Graphologue:</strong> three text-only failure modes apply directly to portfolio construction — verbosity, linearity, inflexibility. The basket card solves all three.</div>
+      </div>
+      <div class="dc">
+        <div class="dc-lbl">What we built</div>
+        <div class="dc-t"><span class="pill">Basket card</span> — a generated interactive artifact coexisting with the conversational response.</div>
+      </div>
+    </div>
+    <div class="dr">
+      <div class="dc">
+        <div class="dc-lbl">The alternative</div>
+        <div class="dc-t">Pending changes model — queue edits, batch approve, regenerate. Seriously considered.</div>
+      </div>
+      <div class="dc mid">
+        <div class="dc-lbl">Research demanded</div>
+        <div class="dc-t"><strong>DynaVis:</strong> editing confidence requires immediacy. The persistent widget must reflect the instruction in the same conversational turn. A pending queue breaks it.</div>
+      </div>
+      <div class="dc">
+        <div class="dc-lbl">What we built</div>
+        <div class="dc-t"><span class="pill">Live rebuild</span> — every confirmed instruction immediately updates basket and chip.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  08  DECISIONS B (rows 3+4)
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Research → Design · Decisions 3 &amp; 4</span>
+  <div class="dw a2">
+    <div class="dr">
+      <div class="dc">
+        <div class="dc-lbl">The alternative</div>
+        <div class="dc-t">A richer chip — changelog of added/removed stocks, drift warnings inline.</div>
+      </div>
+      <div class="dc mid">
+        <div class="dc-lbl">Research demanded</div>
+        <div class="dc-t"><strong>DynaVis + Amershi G14:</strong> the chip answers one question — "where is my basket right now?" A changelog converts it from orientation device to decision surface. The thread's job, not the chip's.</div>
+      </div>
+      <div class="dc">
+        <div class="dc-lbl">What we built</div>
+        <div class="dc-t"><span class="pill">Three-number chip</span> — stocks · alpha vs Nifty · horizon. Permanent during edit. Invisible outside it.</div>
+      </div>
+    </div>
+    <div class="dr">
+      <div class="dc">
+        <div class="dc-lbl">The alternative</div>
+        <div class="dc-t">Open invest screen to returns projection. Every competitor does this. Numbers feel like information.</div>
+      </div>
+      <div class="dc mid">
+        <div class="dc-lbl">Research demanded</div>
+        <div class="dc-t"><strong>CFA 2025:</strong> explainability is the #2 barrier to AI adoption. Numbers at ₹30L activate the analytical brain — which second-guesses. <strong>Thesis activates conviction.</strong></div>
+      </div>
+      <div class="dc">
+        <div class="dc-lbl">What we built</div>
+        <div class="dc-t"><span class="pill">Thesis-first invest sheet</span> — the rationale before any number. Ante-hoc interpretability by design.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  09  PROTOTYPE
+═══════════════════════════ -->
+<div class="slide">
+<div class="si" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 120px);text-align:center;gap:32px">
+  <div class="a2">
+    <div style="font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--or);margin-bottom:16px;opacity:.8">04 — The Prototype</div>
+    <div style="font-family:var(--serif);font-size:42px;font-weight:600;color:var(--t1);line-height:1.1;letter-spacing:-.04em;margin-bottom:12px">Every interaction is a direct<br/><em style="font-style:italic;color:var(--or)">implementation of the research.</em></div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.65;max-width:480px;margin:0 auto 32px">Opening → four questions → basket → edit conversation → invest sheet. Every design decision cited above is visible in the flow.</div>
+    <a href="https://react-u6t2vq3z.stackblitz.io" target="_blank"
+      style="display:inline-flex;align-items:center;gap:10px;background:var(--or);color:white;text-decoration:none;font-family:var(--sans);font-size:14px;font-weight:600;padding:14px 28px;border-radius:100px;box-shadow:0 4px 20px rgba(217,79,0,.3);transition:all 160ms;letter-spacing:.01em">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      Open Angel Pod prototype
+    </a>
+  </div>
+  <div class="a3" style="display:flex;gap:32px;margin-top:8px">
+    <div style="text-align:left;max-width:160px"><div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px">01</div><div style="font-size:11px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Warm open → basket intent.</strong> Conversation before product.</div></div>
+    <div style="text-align:left;max-width:160px"><div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px">02</div><div style="font-size:11px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Four questions.</strong> Parameter-setting acts.</div></div>
+    <div style="text-align:left;max-width:160px"><div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px">03</div><div style="font-size:11px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Basket card.</strong> Text and card together — Graphologue.</div></div>
+    <div style="text-align:left;max-width:160px"><div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px">04</div><div style="font-size:11px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Edit conversation.</strong> Chip updates live.</div></div>
+    <div style="text-align:left;max-width:160px"><div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px">05</div><div style="font-size:11px;color:var(--t2);line-height:1.5"><strong style="color:var(--t1)">Invest sheet.</strong> Thesis first. Not numbers.</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════
+  10  FINAL
+═══════════════════════════ -->
+<div class="slide">
+<div class="si">
+  <span class="slbl a1">Summary</span>
+  <table class="ft a2">
+    <thead><tr><th>Research said</th><th>Citation</th><th>We built</th></tr></thead>
+    <tbody>
+      <tr><td class="tdr">Text + visual must stream simultaneously</td><td class="tdc"><a href="https://dl.acm.org/doi/10.1145/3586183.3606737" target="_blank">Graphologue · UIST 2023</a></td><td class="tdb">Basket card alongside the AI's words</td></tr>
+      <tr><td class="tdr">Persistent widgets create editing confidence</td><td class="tdc"><a href="https://dl.acm.org/doi/10.1145/3613904.3642639" target="_blank">DynaVis · CHI 2024</a></td><td class="tdb">Sliders + three-number chip</td></tr>
+      <tr><td class="tdr">Direct manipulation 50% faster than description</td><td class="tdc"><a href="https://dl.acm.org/doi/10.1145/3613904.3642462" target="_blank">DirectGPT · CHI 2024</a></td><td class="tdb">Conversational edit flow</td></tr>
+      <tr><td class="tdr">Structured tasks benefit most from generative UI</td><td class="tdc"><a href="https://blog.research.google/2025/11/generative-ui-rich-custom-visual.html" target="_blank">Google GenUI · 2025</a></td><td class="tdb">Basket card is a generated interface, not a template</td></tr>
+      <tr><td class="tdr">Co-authorship → 3× less panic selling</td><td class="tdc">Ashtiani et al.</td><td class="tdb">Full edit conversation before investment</td></tr>
+      <tr><td class="tdr">Explainability is the #2 barrier to AI adoption</td><td class="tdc"><a href="https://rpc.cfainstitute.org/en/research/reports/2024/artificial-intelligence-in-investment-management" target="_blank">CFA Institute · 2025</a></td><td class="tdb">Per-stock reasoning + thesis-first invest sheet</td></tr>
+      <tr><td class="tdr">Immediacy of feedback = decision confidence</td><td class="tdc"><a href="https://dl.acm.org/doi/10.1145/3613904.3642639" target="_blank">DynaVis · Amershi G14</a></td><td class="tdb">Basket rebuilds live on confirmed instruction</td></tr>
+    </tbody>
+  </table>
+  <div class="fthesis a3">Angel Pod is a <em>generative UI</em> that builds algorithm appreciation through co-authorship — converting casual investors into conviction holders who stay through drawdowns.</div>
+</div>
+</div>
+
+</div><!-- deck -->
+
+<div class="chrome">
+  <div class="cb">
+    <div class="clogo"><svg width="7" height="7" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" fill="white" fillOpacity=".95"/></svg></div>
+    <div class="cname">Angel <em>Pod</em></div>
+  </div>
+  <div class="cn">
+    <div class="sc" id="sc">01 / 10</div>
+    <button class="nb" onclick="go(-1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg></button>
+    <button class="nb" onclick="go(1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg></button>
+  </div>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide'),N=slides.length;
+let cur=0;
+function show(n){
+  slides[cur].classList.remove('active');
+  cur=Math.max(0,Math.min(N-1,n));
+  slides[cur].classList.add('active');
+  const si=slides[cur].querySelector('.si');
+  if(si)si.scrollTop=0;
+  document.getElementById('sc').textContent=String(cur+1).padStart(2,'0')+' / '+String(N).padStart(2,'0');
+  document.getElementById('pf').style.width=((cur+1)/N*100)+'%';
+}
+function go(d){show(cur+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(1);}
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(-1);}
+});
+// Force iframe body to exact dimensions — prevents internal scroll
+const iframe=document.querySelector('.pphone iframe');
+if(iframe){
+  iframe.addEventListener('load',function(){
+    try{
+      const doc=iframe.contentDocument||iframe.contentWindow.document;
+      const s=doc.createElement('style');
+      s.textContent='html,body{width:375px!important;height:780px!important;overflow:hidden!important;max-width:375px!important;}';
+      doc.head.appendChild(s);
+    }catch(e){/* cross-origin — cannot inject, overflow:hidden on container handles it */}
+  });
+}
+show(0);
+</script>
+</body>
+</html>
